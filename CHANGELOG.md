@@ -5,7 +5,17 @@ All notable changes to Filament Studio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2026-03-15
+## [Unreleased]
+
+## [1.0.1] - 2026-03-28
+
+### Changed
+
+- Minimum PHP version raised from 8.2 to 8.3 (required by Pest v4)
+- Added package metadata: `authors`, `homepage`, and `support` to `composer.json`
+- Fixed release date for v1.0.0 in CHANGELOG
+
+## [1.0.0] - 2026-03-27
 
 ### Added
 
@@ -29,4 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Configurable Table Prefix** to avoid naming conflicts
 - **Migration Log Tracking** for schema change auditing
 
+[Unreleased]: https://github.com/flexpik/filament-studio/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/flexpik/filament-studio/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/flexpik/filament-studio/releases/tag/v1.0.0

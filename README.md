@@ -196,7 +196,7 @@ This approach enables runtime schema changes without migrations while preserving
 
 ## Requirements
 
-- PHP 8.2+
+- PHP 8.3+
 - Laravel 11+
 - Filament v5
 
