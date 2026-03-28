@@ -2,7 +2,6 @@
 
 namespace Flexpik\FilamentStudio\Resources\ApiSettingsResource\Pages;
 
-use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Flexpik\FilamentStudio\Enums\ApiAction;
 use Flexpik\FilamentStudio\Resources\ApiSettingsResource;
@@ -28,12 +27,12 @@ class CreateApiKey extends CreateRecord
 
     protected function afterCreate(): void
     {
-        Notification::make()
-            ->title('API Key Created')
-            ->body('Copy your API key now — it will not be shown again: **'.$this->plainKey.'**')
-            ->success()
-            ->persistent()
-            ->send();
+        session()->flash('new_api_key', $this->plainKey);
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return static::getResource()::getUrl('edit', ['record' => $this->record]);
     }
 
     /**

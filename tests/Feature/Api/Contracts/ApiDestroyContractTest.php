@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 beforeEach(function () {
     StudioApiRouteRegistrar::register();
 
-    $this->collection = StudioCollection::factory()->withSoftDeletes()->create(['slug' => 'posts']);
+    $this->collection = StudioCollection::factory()->withSoftDeletes()->apiEnabled()->create(['slug' => 'posts']);
 
     $this->titleField = StudioField::factory()->required()->create([
         'collection_id' => $this->collection->id,

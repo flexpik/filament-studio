@@ -16,9 +16,9 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Flexpik\FilamentStudio\Models\StudioCollection;
 use Flexpik\FilamentStudio\Resources\CollectionManagerResource\Pages;
-use Illuminate\Database\Eloquent\Builder;
 use Flexpik\FilamentStudio\Resources\CollectionManagerResource\RelationManagers\FieldsRelationManager;
 use Flexpik\FilamentStudio\Resources\CollectionManagerResource\RelationManagers\MigrationLogsRelationManager;
+use Illuminate\Database\Eloquent\Builder;
 
 class CollectionManagerResource extends Resource
 {
@@ -121,6 +121,10 @@ class CollectionManagerResource extends Resource
                                 Forms\Components\Toggle::make('enable_soft_deletes')
                                     ->label('Enable Soft Deletes')
                                     ->helperText('Move records to trash instead of permanent deletion.'),
+                                Forms\Components\Toggle::make('api_enabled')
+                                    ->label('API Enabled')
+                                    ->helperText('Expose this collection\'s CRUD endpoints in the REST API and OpenAPI documentation.')
+                                    ->visible(fn () => config('filament-studio.api.enabled', false)),
                             ])
                             ->collapsible()
                             ->collapsed(),

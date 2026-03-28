@@ -3,6 +3,7 @@
 namespace Flexpik\FilamentStudio;
 
 use Dedoc\Scramble\Scramble;
+use Filament\Facades\Filament;
 use Flexpik\FilamentStudio\Api\OpenApi\StudioDocumentTransformer;
 use Flexpik\FilamentStudio\Api\OpenApi\StudioOperationTransformer;
 use Flexpik\FilamentStudio\Api\StudioApiRouteRegistrar;
@@ -151,7 +152,12 @@ class FilamentStudioServiceProvider extends PackageServiceProvider
         });
 
         $this->app->booted(function () {
-            if (config('filament-studio.api.enabled', false)) {
+            // Check both config and plugin instance — the plugin sets config
+            // during Filament panel boot, which may run after app booted callbacks.
+            $apiEnabled = config('filament-studio.api.enabled', false)
+                || $this->pluginHasApiEnabled();
+
+            if ($apiEnabled) {
                 StudioApiRouteRegistrar::register();
 
                 if (class_exists(Scramble::class)) {
@@ -165,6 +171,27 @@ class FilamentStudioServiceProvider extends PackageServiceProvider
                 }
             }
         });
+    }
+
+    protected function pluginHasApiEnabled(): bool
+    {
+        try {
+            foreach (Filament::getPanels() as $panel) {
+                if (! $panel->hasPlugin('filament-studio')) {
+                    continue;
+                }
+
+                $plugin = $panel->getPlugin('filament-studio');
+
+                if ($plugin instanceof FilamentStudioPlugin && $plugin->isApiEnabled()) {
+                    return true;
+                }
+            }
+        } catch (\Throwable) {
+            // Filament not yet booted or panels not available
+        }
+
+        return false;
     }
 
     protected function registerActivityLogging(): void

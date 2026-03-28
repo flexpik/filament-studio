@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 beforeEach(function () {
     StudioApiRouteRegistrar::register();
 
-    $this->collection = StudioCollection::factory()->create(['slug' => 'posts']);
+    $this->collection = StudioCollection::factory()->apiEnabled()->create(['slug' => 'posts']);
 
     StudioField::factory()->required()->create([
         'collection_id' => $this->collection->id,
@@ -106,7 +106,7 @@ it('scopes key permissions to a specific collection and denies access to others'
     ]);
 
     // Create a second collection
-    $tasksCollection = StudioCollection::factory()->create(['slug' => 'tasks']);
+    $tasksCollection = StudioCollection::factory()->apiEnabled()->create(['slug' => 'tasks']);
 
     StudioField::factory()->required()->create([
         'collection_id' => $tasksCollection->id,

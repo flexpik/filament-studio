@@ -12,7 +12,7 @@ beforeEach(function () {
     // Register API routes manually since config is set after boot
     StudioApiRouteRegistrar::register();
 
-    $this->collection = StudioCollection::factory()->create(['slug' => 'posts']);
+    $this->collection = StudioCollection::factory()->apiEnabled()->create(['slug' => 'posts']);
 
     $this->titleField = StudioField::factory()->required()->create([
         'collection_id' => $this->collection->id,

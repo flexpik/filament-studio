@@ -22,6 +22,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $description
  * @property bool $is_singleton
  * @property bool $is_hidden
+ * @property bool $api_enabled
  * @property string|null $sort_field
  * @property SortDirection $sort_direction
  * @property bool $enable_versioning
@@ -54,6 +55,7 @@ class StudioCollection extends Model
         return [
             'is_singleton' => 'boolean',
             'is_hidden' => 'boolean',
+            'api_enabled' => 'boolean',
             'sort_direction' => SortDirection::class,
             'enable_versioning' => 'boolean',
             'enable_soft_deletes' => 'boolean',
@@ -105,6 +107,11 @@ class StudioCollection extends Model
     public function scopeOrdered($query)
     {
         return $query->orderBy('label');
+    }
+
+    public function scopeApiEnabled($query)
+    {
+        return $query->where('api_enabled', true);
     }
 
     protected static function newFactory(): StudioCollectionFactory

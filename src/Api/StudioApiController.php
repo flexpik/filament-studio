@@ -18,7 +18,9 @@ class StudioApiController extends Controller
 {
     protected function resolveCollection(Request $request, string $slug): StudioCollection
     {
-        $query = StudioCollection::query()->where('slug', $slug);
+        $query = StudioCollection::query()
+            ->where('slug', $slug)
+            ->where('api_enabled', true);
 
         $apiKey = $this->getApiKey($request);
 

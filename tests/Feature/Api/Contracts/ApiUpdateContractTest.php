@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 beforeEach(function () {
     StudioApiRouteRegistrar::register();
 
-    $this->collection = StudioCollection::factory()->create(['slug' => 'products']);
+    $this->collection = StudioCollection::factory()->apiEnabled()->create(['slug' => 'products']);
 
     $this->nameField = StudioField::factory()->required()->create([
         'collection_id' => $this->collection->id,

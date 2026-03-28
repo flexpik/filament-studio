@@ -12,7 +12,7 @@ beforeEach(function () {
     StudioApiRouteRegistrar::register();
 
     // Tenant A setup
-    $this->collectionA = StudioCollection::factory()->forTenant(1)->create(['slug' => 'articles']);
+    $this->collectionA = StudioCollection::factory()->forTenant(1)->apiEnabled()->create(['slug' => 'articles']);
 
     StudioField::factory()->required()->create([
         'collection_id' => $this->collectionA->id,
@@ -29,7 +29,7 @@ beforeEach(function () {
     $this->recordA = EavQueryBuilder::for($this->collectionA)->create(['title' => 'Tenant A Article']);
 
     // Tenant B setup (same slug, different tenant)
-    $this->collectionB = StudioCollection::factory()->forTenant(2)->create(['slug' => 'articles']);
+    $this->collectionB = StudioCollection::factory()->forTenant(2)->apiEnabled()->create(['slug' => 'articles']);
 
     StudioField::factory()->required()->create([
         'collection_id' => $this->collectionB->id,

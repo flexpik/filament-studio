@@ -26,6 +26,7 @@ class StudioCollectionFactory extends Factory
             'description' => $this->faker->optional()->sentence(),
             'is_singleton' => false,
             'is_hidden' => false,
+            'api_enabled' => false,
             'sort_field' => null,
             'sort_direction' => 'asc',
             'enable_versioning' => false,
@@ -51,6 +52,11 @@ class StudioCollectionFactory extends Factory
     public function withSoftDeletes(): static
     {
         return $this->state(fn () => ['enable_soft_deletes' => true]);
+    }
+
+    public function apiEnabled(): static
+    {
+        return $this->state(fn () => ['api_enabled' => true]);
     }
 
     public function forTenant(int $tenantId): static

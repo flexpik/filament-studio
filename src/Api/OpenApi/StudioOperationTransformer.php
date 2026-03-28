@@ -15,6 +15,13 @@ class StudioOperationTransformer
             return;
         }
 
+        // Skip if X-Api-Key parameter already exists (added by DocumentTransformer)
+        foreach ($operation->parameters as $param) {
+            if ($param instanceof Parameter && $param->name === 'X-Api-Key') {
+                return;
+            }
+        }
+
         $operation->addParameters([
             (new Parameter('X-Api-Key', 'header'))
                 ->description('API key for authentication')

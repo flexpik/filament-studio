@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-03-28
+
+### Added
+
+- **Per-Collection API Documentation** — Each collection now has an `api_enabled` toggle in the Data Models editor. When enabled, the collection's CRUD endpoints appear in the OpenAPI/Swagger documentation at `/docs/api` with field-specific request/response schemas
+- **Dynamic OpenAPI Schema Generation** — `StudioDocumentTransformer` generates per-collection paths with typed schemas derived from each collection's field definitions, including proper EAV cast mapping (text→string, integer→integer, decimal→number, boolean→boolean, datetime→date-time, json→object)
+- **API Key Display & Copy** — After creating or regenerating an API key, the plain key is shown in a dedicated form section with a monospace input and Filament's built-in copy-to-clipboard button
+- **Regenerate Key Action** — "Regenerate Key" button on the API key edit page with confirmation dialog; immediately invalidates the old key
+- **`api_enabled` column** on `studio_collections` table with migration, model cast, `scopeApiEnabled()` query scope, and `apiEnabled()` factory state
+
+### Fixed
+
+- **API route registration boot order** — Fixed timing issue where `FilamentStudioPlugin::boot()` set the API config after the service provider's `booted()` callback had already checked it, preventing routes from registering
+- **OpenAPI path prefix duplication** — Stripped Scramble's `api_path` prefix from generated paths to avoid double-prefixed URLs (e.g., `/api/api/studio/...`) that caused 404s from the Try It button
+- **API gate for disabled collections** — `StudioApiController::resolveCollection()` now rejects requests to collections with `api_enabled=false` (returns 404)
+- **Duplicate X-Api-Key parameters** — `StudioOperationTransformer` skips operations that already have the header parameter added by the document transformer
+
 ## [1.0.1] - 2026-03-28
 
 ### Changed
@@ -39,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Configurable Table Prefix** to avoid naming conflicts
 - **Migration Log Tracking** for schema change auditing
 
-[Unreleased]: https://github.com/flexpik/filament-studio/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/flexpik/filament-studio/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/flexpik/filament-studio/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/flexpik/filament-studio/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/flexpik/filament-studio/releases/tag/v1.0.0

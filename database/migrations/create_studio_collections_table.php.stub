@@ -21,6 +21,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->boolean('is_singleton')->default(false);
             $table->boolean('is_hidden')->default(false);
+            $table->boolean('api_enabled')->default(false);
             $table->string('sort_field', 64)->nullable();
             $table->string('sort_direction')->default('asc');
             $table->boolean('enable_versioning')->default(false);
