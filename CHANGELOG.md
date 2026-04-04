@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-04-04
+
+### Added
+
+- **Dashboard Panels Relation Manager** — Manage panels directly within dashboard edit pages with full CRUD, ordering, and panel type configuration
+- **PanelsRelationManagerTest** — 174-line test covering panel creation, editing, deletion, and listing within dashboards
+- **Inline Filter Builder Views** — Alpine-based filter builder variants (`filter-builder-alpine`, `filter-builder-inline`, `filter-group-inline`, `filter-rule-row-inline`) for alternative filter UX
+
+### Changed
+
+- **Filter Builder** rewritten with improved UX — enhanced filter-builder, filter-group, and filter-rule-row Blade views
+- **Version History View** — Layout and display improvements
+- **EavQueryBuilder** — Expanded query capabilities and performance refinements
+- **Collection Record Pages** — Improved Edit, List, and View pages with better layout and functionality
+- **API Settings Resource** — Updated resource and ListApiKeys page
+- **Field Types** improved: Avatar (validation), CheckboxList (options handling), File (upload config), Image (preview), MultiSelect (search), Password (confirmation), RichEditor (toolbar), Tags (separators)
+- **Dashboard Panel Types** refined: BarChart, LineChart, List, Meter, Metric, PieChart, TimeSeries — consistent configuration patterns
+- **StudioRecordVersion** model updates
+
+### Fixed
+
+- **Concurrency test reliability** — Fixed timing issues in DeleteWithIntegrityRace and HardDeleteRace tests
+- **API cross-tenant access** — Test cleanup for ApiCrossTenantAccessTest
+- **RecordResource test** — Removed redundant assertion
+- **RichEditorFieldType test** — Fixed expected toolbar config
+
 ## [1.0.2] - 2026-03-28
 
 ### Added
@@ -56,7 +82,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Configurable Table Prefix** to avoid naming conflicts
 - **Migration Log Tracking** for schema change auditing
 
-[Unreleased]: https://github.com/flexpik/filament-studio/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/flexpik/filament-studio/compare/v1.0.3...HEAD
+[1.0.3]: https://github.com/flexpik/filament-studio/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/flexpik/filament-studio/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/flexpik/filament-studio/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/flexpik/filament-studio/releases/tag/v1.0.0

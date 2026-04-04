@@ -2,11 +2,11 @@
 
 namespace Flexpik\FilamentStudio\Panels\Types;
 
+use Filament\Facades\Filament;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
-use Filament\Facades\Filament;
 use Flexpik\FilamentStudio\Enums\AggregateFunction;
 use Flexpik\FilamentStudio\Models\StudioCollection;
 use Flexpik\FilamentStudio\Models\StudioField;

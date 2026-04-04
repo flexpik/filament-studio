@@ -3,7 +3,6 @@
 use Flexpik\FilamentStudio\Api\Resources\RecordResource;
 use Flexpik\FilamentStudio\Models\StudioCollection;
 use Flexpik\FilamentStudio\Models\StudioField;
-use Flexpik\FilamentStudio\Models\StudioRecord;
 use Flexpik\FilamentStudio\Services\EavQueryBuilder;
 use Illuminate\Http\Request;
 

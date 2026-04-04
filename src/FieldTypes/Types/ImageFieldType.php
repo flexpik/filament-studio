@@ -37,15 +37,10 @@ class ImageFieldType extends AbstractFieldType
 
     public function toFilamentComponent(): Component
     {
-        $upload = FileUpload::make($this->field->column_name)->image();
-
-        if ($this->setting('disk')) {
-            $upload->disk($this->setting('disk'));
-        }
-
-        if ($this->setting('directory')) {
-            $upload->directory($this->setting('directory'));
-        }
+        $upload = FileUpload::make($this->field->column_name)
+            ->image()
+            ->disk($this->setting('disk', 'public'))
+            ->directory($this->setting('directory', 'images'));
 
         if ($this->setting('max_size')) {
             $upload->maxSize((int) $this->setting('max_size'));
@@ -68,7 +63,11 @@ class ImageFieldType extends AbstractFieldType
 
     public function toTableColumn(): ?Column
     {
-        return ImageColumn::make($this->field->column_name)->size(40);
+        $column = ImageColumn::make($this->field->column_name)->size(40);
+
+        $column->disk($this->setting('disk', 'public'));
+
+        return $column;
     }
 
     public function toFilter(): ?BaseFilter

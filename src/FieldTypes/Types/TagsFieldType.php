@@ -47,7 +47,12 @@ class TagsFieldType extends AbstractFieldType
     {
         return TextColumn::make($this->field->column_name)
             ->badge()
-            ->separator($this->setting('separator', ','));
+            ->formatStateUsing(function (mixed $state): string {
+                $values = is_string($state) ? (json_decode($state, true) ?? [$state]) : (array) $state;
+
+                return collect($values)->implode(', ');
+            })
+            ->separator(', ');
     }
 
     public function toFilter(): ?BaseFilter

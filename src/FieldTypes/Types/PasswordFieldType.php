@@ -35,7 +35,8 @@ class PasswordFieldType extends AbstractFieldType
         $input = TextInput::make($this->field->column_name)
             ->password()
             ->dehydrateStateUsing(fn (?string $state): ?string => $state ? bcrypt($state) : null)
-            ->dehydrated(fn (?string $state): bool => filled($state));
+            ->dehydrated(fn (?string $state): bool => filled($state))
+            ->formatStateUsing(fn (): ?string => null);
 
         if ($this->setting('revealable', true)) {
             $input->revealable();

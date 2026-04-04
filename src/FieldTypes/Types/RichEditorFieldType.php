@@ -21,7 +21,7 @@ class RichEditorFieldType extends AbstractFieldType
 
     public static string $icon = 'heroicon-o-document-magnifying-glass';
 
-    public static EavCast $eavCast = EavCast::Json;
+    public static EavCast $eavCast = EavCast::Text;
 
     public static string $category = 'text';
 
@@ -64,7 +64,7 @@ class RichEditorFieldType extends AbstractFieldType
     public function toTableColumn(): ?Column
     {
         return TextColumn::make($this->field->column_name)
-            ->html()
+            ->formatStateUsing(fn (mixed $state): string => strip_tags((string) $state))
             ->limit(100)
             ->wrap();
     }

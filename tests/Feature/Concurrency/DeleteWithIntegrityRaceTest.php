@@ -96,7 +96,7 @@ it('deleteWithIntegrity respects restrict and throws before deleting', function 
     ]);
 
     expect(fn () => EavQueryBuilder::for($parentCol)->tenant(1)->deleteWithIntegrity($category->uuid))
-        ->toThrow(\RuntimeException::class, 'Cannot delete record: it is referenced by other records');
+        ->toThrow(RuntimeException::class, 'Cannot delete record: it is referenced by other records');
 
     expect(StudioRecord::find($category->id))->not->toBeNull();
 });

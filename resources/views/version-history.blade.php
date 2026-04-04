@@ -1,6 +1,7 @@
 @php
     $fieldLabels = $fieldLabels ?? [];
     $fieldTypes = $fieldTypes ?? [];
+    $sensitiveFields = $sensitiveFields ?? [];
     $showRestore = $showRestore ?? false;
 
     // Build version number map: oldest = v1, newest = vN
@@ -349,15 +350,22 @@
                 $snapshot = $version->snapshot;
                 $totalFields = count($snapshot);
 
-                // Count changed fields
+                // Count changed fields (exclude sensitive)
                 $changedCount = 0;
+                $visibleFieldCount = 0;
                 if ($previousSnapshot !== null) {
                     foreach ($snapshot as $field => $value) {
+                        if (in_array($field, $sensitiveFields)) {
+                            continue;
+                        }
+                        $visibleFieldCount++;
                         $oldValue = $previousSnapshot[$field] ?? null;
                         if ($value !== $oldValue) {
                             $changedCount++;
                         }
                     }
+                } else {
+                    $visibleFieldCount = count(array_diff_key($snapshot, array_flip($sensitiveFields)));
                 }
 
                 // User info
@@ -386,12 +394,16 @@
 
                 @if ($previousSnapshot !== null)
                     <div class="vh__summary">
-                        {{ $changedCount }} of {{ $totalFields }} {{ Str::plural('field', $totalFields) }} changed
+                        {{ $changedCount }} of {{ $visibleFieldCount }} {{ Str::plural('field', $visibleFieldCount) }} changed
                     </div>
                 @endif
 
                 <div class="vh__fields">
                     @foreach ($snapshot as $field => $value)
+                        @if (in_array($field, $sensitiveFields))
+                            @continue
+                        @endif
+
                         @php
                             $label = $fieldLabels[$field] ?? Str::headline($field);
                             $displayValue = $formatValue($value, $field);

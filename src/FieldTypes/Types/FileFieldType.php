@@ -44,15 +44,9 @@ class FileFieldType extends AbstractFieldType
 
     public function toFilamentComponent(): Component
     {
-        $upload = FileUpload::make($this->field->column_name);
-
-        if ($this->setting('disk')) {
-            $upload->disk($this->setting('disk'));
-        }
-
-        if ($this->setting('directory')) {
-            $upload->directory($this->setting('directory'));
-        }
+        $upload = FileUpload::make($this->field->column_name)
+            ->disk($this->setting('disk', 'public'))
+            ->directory($this->setting('directory', 'uploads'));
 
         if ($this->setting('visibility')) {
             $upload->visibility($this->setting('visibility'));

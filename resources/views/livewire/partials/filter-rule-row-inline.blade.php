@@ -1,6 +1,6 @@
 <div class="fb__rule" wire:key="rule-{{ $path }}">
     <select
-        wire:model.live="tree.rules.{{ $path }}.field"
+        wire:model.live="advancedFilterTree.rules.{{ $path }}.field"
         class="fb__select"
     >
         <option value="">Select field...</option>
@@ -14,7 +14,7 @@
             $operators = $this->getOperatorsForField($rule['field']);
         @endphp
         <select
-            wire:model.live="tree.rules.{{ $path }}.operator"
+            wire:model.live="advancedFilterTree.rules.{{ $path }}.operator"
             class="fb__select"
         >
             @foreach ($operators as $opValue => $opLabel)
@@ -32,7 +32,7 @@
         @unless ($isUnary)
             <input
                 type="text"
-                wire:model.blur="tree.rules.{{ $path }}.value"
+                wire:model.blur="advancedFilterTree.rules.{{ $path }}.value"
                 placeholder="Value..."
                 class="fb__input"
             />
@@ -41,7 +41,7 @@
 
     <button
         type="button"
-        wire:click="removeRule('{{ $path }}')"
+        wire:click="removeFilterRule('{{ $path }}')"
         class="fb__remove-btn"
         title="Remove rule"
     >

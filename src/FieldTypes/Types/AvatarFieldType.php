@@ -39,15 +39,9 @@ class AvatarFieldType extends AbstractFieldType
             ->avatar()
             ->imageCropAspectRatio('1:1')
             ->imageResizeTargetWidth('256')
-            ->imageResizeTargetHeight('256');
-
-        if ($this->setting('disk')) {
-            $upload->disk($this->setting('disk'));
-        }
-
-        if ($this->setting('directory')) {
-            $upload->directory($this->setting('directory'));
-        }
+            ->imageResizeTargetHeight('256')
+            ->disk($this->setting('disk', 'public'))
+            ->directory($this->setting('directory', 'avatars'));
 
         if ($this->setting('max_size')) {
             $upload->maxSize((int) $this->setting('max_size'));
@@ -58,7 +52,11 @@ class AvatarFieldType extends AbstractFieldType
 
     public function toTableColumn(): ?Column
     {
-        return ImageColumn::make($this->field->column_name)->circular()->size(40);
+        $column = ImageColumn::make($this->field->column_name)->circular()->size(40);
+
+        $column->disk($this->setting('disk', 'public'));
+
+        return $column;
     }
 
     public function toFilter(): ?BaseFilter

@@ -3,6 +3,7 @@
 use Flexpik\FilamentStudio\Models\StudioCollection;
 use Flexpik\FilamentStudio\Models\StudioRecord;
 use Flexpik\FilamentStudio\Models\StudioRecordVersion;
+use Illuminate\Foundation\Auth\User;
 
 it('can be created with factory', function () {
     $version = StudioRecordVersion::factory()->create();
@@ -39,7 +40,7 @@ it('scopes by tenant', function () {
 });
 
 it('belongs to a creator user', function () {
-    $user = \Illuminate\Foundation\Auth\User::forceCreate([
+    $user = User::forceCreate([
         'name' => 'Jane Doe',
         'email' => 'jane@example.com',
         'password' => bcrypt('password'),
@@ -50,7 +51,7 @@ it('belongs to a creator user', function () {
     ]);
 
     expect($version->creator)
-        ->toBeInstanceOf(\Illuminate\Foundation\Auth\User::class)
+        ->toBeInstanceOf(User::class)
         ->name->toBe('Jane Doe');
 });
 

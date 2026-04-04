@@ -53,7 +53,7 @@ it('hard delete does not leave orphaned values if record deletion fails', functi
     $record = EavQueryBuilder::for($collection)->tenant(1)->create(['title' => 'Test']);
     $recordId = $record->id;
 
-    DB::listen(function ($query) use ($recordId) {
+    DB::listen(function ($query) {
         // Documentation test — the transaction wrapping is the fix
     });
 

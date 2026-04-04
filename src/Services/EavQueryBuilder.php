@@ -267,8 +267,24 @@ class EavQueryBuilder
             EavCast::Decimal => $value->val_decimal !== null ? (float) $value->val_decimal : null,
             EavCast::Boolean => $value->val_boolean !== null ? (bool) $value->val_boolean : null,
             EavCast::Datetime => $value->val_datetime,
-            EavCast::Json => $value->val_json !== null ? (is_string($value->val_json) ? json_decode($value->val_json, true) : $value->val_json) : null,
+            EavCast::Json => $value->val_json !== null ? $this->castJsonValue($value->val_json) : null,
         };
+    }
+
+    /**
+     * Decode a val_json value. Returns decoded arrays and strings as-is.
+     * For other decoded types (int, float, bool, null) returns the raw string,
+     * as these indicate non-JSON text content stored in val_json.
+     */
+    protected function castJsonValue(mixed $raw): mixed
+    {
+        if (! is_string($raw)) {
+            return $raw;
+        }
+
+        $decoded = json_decode($raw, true);
+
+        return is_array($decoded) || is_string($decoded) ? $decoded : $raw;
     }
 
     protected function resolveField(string $columnName): ?StudioField
@@ -785,12 +801,27 @@ class EavQueryBuilder
         // Add subquery selects for each field so values are accessible as attributes
         foreach ($this->getFields() as $field) {
             $column = $field->eav_cast->column();
+
+            $subquery = StudioValue::query()
+                ->whereColumn("{$this->valuesTable}.record_id", "{$this->recordsTable}.id")
+                ->where("{$this->valuesTable}.field_id", $field->id)
+                ->limit(1);
+
+            // JSON columns need unwrapping to strip the JSON string quotes.
+            // MySQL uses JSON_UNQUOTE, SQLite uses json_extract with '$'.
+            if ($column === 'val_json') {
+                $driver = $subquery->getQuery()->getConnection()->getDriverName();
+                if ($driver === 'sqlite') {
+                    $subquery->selectRaw("json_extract({$this->valuesTable}.{$column}, '$')");
+                } else {
+                    $subquery->selectRaw("JSON_UNQUOTE({$this->valuesTable}.{$column})");
+                }
+            } else {
+                $subquery->select("{$this->valuesTable}.{$column}");
+            }
+
             $query->addSelect([
-                $field->column_name => StudioValue::query()
-                    ->select("{$this->valuesTable}.{$column}")
-                    ->whereColumn("{$this->valuesTable}.record_id", "{$this->recordsTable}.id")
-                    ->where("{$this->valuesTable}.field_id", $field->id)
-                    ->limit(1),
+                $field->column_name => $subquery,
             ]);
         }
 
@@ -1005,9 +1036,25 @@ class EavQueryBuilder
             EavCast::Integer => (int) $value,
             EavCast::Decimal => (float) $value,
             EavCast::Boolean => (bool) $value ? 1 : 0,
-            EavCast::Datetime => $value instanceof \DateTimeInterface ? $value->format('Y-m-d H:i:s') : (string) $value,
+            EavCast::Datetime => $this->prepareDatetimeValue($value),
             EavCast::Json => is_string($value) ? $value : json_encode($value),
         };
+    }
+
+    protected function prepareDatetimeValue(mixed $value): string
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d H:i:s');
+        }
+
+        $value = (string) $value;
+
+        // Time-only values (e.g. "11:27" or "14:30:00") need a date prefix for MySQL DATETIME columns
+        if (preg_match('/^\d{1,2}:\d{2}(:\d{2})?$/', $value)) {
+            return '1970-01-01 '.$value;
+        }
+
+        return $value;
     }
 
     public function withRelated(string $field, StudioCollection $relatedCollection, string $displayField): static
