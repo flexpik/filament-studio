@@ -5,6 +5,7 @@ namespace Flexpik\FilamentStudio\Resources\DynamicCollectionResource\Pages;
 use Filament\Actions;
 use Filament\Facades\Filament;
 use Filament\Resources\Pages\ViewRecord;
+use Flexpik\FilamentStudio\Enums\EavCast;
 use Flexpik\FilamentStudio\Enums\PanelPlacement;
 use Flexpik\FilamentStudio\Models\StudioRecord;
 use Flexpik\FilamentStudio\Models\StudioRecordVersion;
@@ -92,16 +93,39 @@ class ViewCollectionRecord extends ViewRecord
 
                     $fieldLabels = $fields->pluck('label', 'column_name')->all();
                     $fieldTypes = $fields->pluck('eav_cast', 'column_name')
-                        ->map(fn ($cast) => $cast instanceof \Flexpik\FilamentStudio\Enums\EavCast ? $cast->value : (string) $cast)
+                        ->map(fn ($cast) => $cast instanceof EavCast ? $cast->value : (string) $cast)
+                        ->all();
+                    $sensitiveFields = $fields->where('field_type', 'password')
+                        ->pluck('column_name')
                         ->all();
 
                     return view('filament-studio::version-history', [
                         'versions' => $versions,
                         'fieldLabels' => $fieldLabels,
                         'fieldTypes' => $fieldTypes,
-                        'showRestore' => false,
+                        'sensitiveFields' => $sensitiveFields,
+                        'showRestore' => true,
                     ]);
                 });
+
+            $actions[] = Actions\Action::make('restoreVersion')
+                ->label('Restore')
+                ->icon('heroicon-o-arrow-uturn-left')
+                ->requiresConfirmation()
+                ->modalHeading('Restore this version?')
+                ->modalDescription('This will overwrite the current record values with the selected version snapshot. The current state will be saved as a new version before restoring.')
+                ->action(function (array $arguments) {
+                    /** @var StudioRecord $record */
+                    $record = $this->getRecord();
+                    $collection = $this->getResolvedCollection();
+
+                    EavQueryBuilder::for($collection)
+                        ->tenant($record->tenant_id)
+                        ->restoreFromVersion($record->uuid, $arguments['versionId']);
+
+                    $this->redirect($this->getUrl());
+                })
+                ->hidden();
         }
 
         return $actions;

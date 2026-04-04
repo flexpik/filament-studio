@@ -59,9 +59,19 @@ class MultiSelectFieldType extends AbstractFieldType
 
     public function toTableColumn(): ?Column
     {
+        $options = StudioFieldOption::where('field_id', $this->field->id)
+            ->orderBy('sort_order')
+            ->pluck('label', 'value')
+            ->all();
+
         return TextColumn::make($this->field->column_name)
             ->badge()
-            ->separator(',');
+            ->formatStateUsing(function (mixed $state) use ($options): string {
+                $values = is_string($state) ? (json_decode($state, true) ?? [$state]) : (array) $state;
+
+                return collect($values)->map(fn ($v) => $options[$v] ?? $v)->implode(', ');
+            })
+            ->separator(', ');
     }
 
     public function toFilter(): ?BaseFilter

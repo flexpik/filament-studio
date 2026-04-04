@@ -10,7 +10,7 @@ it('has correct static properties', function () {
     expect(RichEditorFieldType::$key)->toBe('rich_editor');
     expect(RichEditorFieldType::$label)->toBe('Rich Editor');
     expect(RichEditorFieldType::$icon)->toBe('heroicon-o-document-magnifying-glass');
-    expect(RichEditorFieldType::$eavCast)->toBe(EavCast::Json);
+    expect(RichEditorFieldType::$eavCast)->toBe(EavCast::Text);
     expect(RichEditorFieldType::$category)->toBe('text');
 });
 

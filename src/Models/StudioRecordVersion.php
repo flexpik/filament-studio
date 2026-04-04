@@ -6,6 +6,7 @@ use Flexpik\FilamentStudio\Database\Factories\StudioRecordVersionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Carbon;
 
 /**
@@ -18,7 +19,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property-read StudioRecord $record
  * @property-read StudioCollection $collection
- * @property-read \Illuminate\Database\Eloquent\Model|null $creator
+ * @property-read Model|null $creator
  */
 class StudioRecordVersion extends Model
 {
@@ -55,7 +56,7 @@ class StudioRecordVersion extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(
-            config('auth.providers.users.model', \Illuminate\Foundation\Auth\User::class),
+            config('auth.providers.users.model', User::class),
             'created_by'
         );
     }

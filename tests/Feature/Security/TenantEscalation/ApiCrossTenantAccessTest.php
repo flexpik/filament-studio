@@ -2,10 +2,8 @@
 
 // tests/Feature/Security/TenantEscalation/ApiCrossTenantAccessTest.php
 
-use Flexpik\FilamentStudio\Models\StudioApiKey;
 use Flexpik\FilamentStudio\Models\StudioCollection;
 use Flexpik\FilamentStudio\Models\StudioField;
-use Flexpik\FilamentStudio\Models\StudioRecord;
 use Flexpik\FilamentStudio\Services\EavQueryBuilder;
 
 beforeEach(function () {

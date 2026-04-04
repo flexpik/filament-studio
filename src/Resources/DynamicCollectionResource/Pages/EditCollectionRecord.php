@@ -5,6 +5,7 @@ namespace Flexpik\FilamentStudio\Resources\DynamicCollectionResource\Pages;
 use Filament\Actions;
 use Filament\Facades\Filament;
 use Filament\Resources\Pages\EditRecord;
+use Flexpik\FilamentStudio\Enums\EavCast;
 use Flexpik\FilamentStudio\Enums\PanelPlacement;
 use Flexpik\FilamentStudio\Models\StudioRecord;
 use Flexpik\FilamentStudio\Models\StudioRecordVersion;
@@ -112,13 +113,17 @@ class EditCollectionRecord extends EditRecord
 
                     $fieldLabels = $fields->pluck('label', 'column_name')->all();
                     $fieldTypes = $fields->pluck('eav_cast', 'column_name')
-                        ->map(fn ($cast) => $cast instanceof \Flexpik\FilamentStudio\Enums\EavCast ? $cast->value : (string) $cast)
+                        ->map(fn ($cast) => $cast instanceof EavCast ? $cast->value : (string) $cast)
+                        ->all();
+                    $sensitiveFields = $fields->where('field_type', 'password')
+                        ->pluck('column_name')
                         ->all();
 
                     return view('filament-studio::version-history', [
                         'versions' => $versions,
                         'fieldLabels' => $fieldLabels,
                         'fieldTypes' => $fieldTypes,
+                        'sensitiveFields' => $sensitiveFields,
                         'showRestore' => true,
                     ]);
                 });

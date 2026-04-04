@@ -19,14 +19,14 @@
             @endphp
 
             @if (isset($item['logic']))
-                @include('filament-studio::livewire.partials.filter-group', [
+                @include('filament-studio::livewire.partials.filter-group-inline', [
                     'group' => $item,
                     'path' => $itemPath,
                     'fieldOptions' => $fieldOptions,
                     'depth' => $depth + 1,
                 ])
             @else
-                @include('filament-studio::livewire.partials.filter-rule-row', [
+                @include('filament-studio::livewire.partials.filter-rule-row-inline', [
                     'rule' => $item,
                     'path' => $itemPath,
                     'fieldOptions' => $fieldOptions,
@@ -37,10 +37,10 @@
 
     @if ($depth > 0)
         <div class="fb__subgroup-links">
-            <button type="button" wire:click="addRule('{{ $path }}')" class="fb__subgroup-link">
+            <button type="button" wire:click="addFilterRule('{{ $path }}')" class="fb__subgroup-link">
                 + Rule
             </button>
-            <button type="button" wire:click="addGroup('{{ $path }}')" class="fb__subgroup-link">
+            <button type="button" wire:click="addFilterGroup('{{ $path }}')" class="fb__subgroup-link">
                 + Group
             </button>
         </div>

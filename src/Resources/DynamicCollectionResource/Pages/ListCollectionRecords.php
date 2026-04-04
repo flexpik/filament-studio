@@ -10,6 +10,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Flexpik\FilamentStudio\Enums\FilterOperator;
 use Flexpik\FilamentStudio\Enums\PanelPlacement;
 use Flexpik\FilamentStudio\Filtering\FilterGroup;
 use Flexpik\FilamentStudio\Models\StudioSavedFilter;
@@ -18,7 +19,6 @@ use Flexpik\FilamentStudio\Resources\DynamicCollectionResource\Concerns\HasPanel
 use Flexpik\FilamentStudio\Resources\DynamicCollectionResource\Concerns\ResolvesCollection;
 use Flexpik\FilamentStudio\Services\EavQueryBuilder;
 use Illuminate\Database\Eloquent\Builder;
-use Livewire\Attributes\On;
 
 class ListCollectionRecords extends ListRecords
 {
@@ -42,11 +42,15 @@ class ListCollectionRecords extends ListRecords
         return $this->getResolvedCollection()->label_plural;
     }
 
-    #[On('filter-applied')]
-    public function onFilterApplied(array $tree): void
+    /**
+     * Apply an advanced filter tree from the Alpine.js filter builder.
+     *
+     * @param  array{logic: string, rules: array}  $tree
+     */
+    public function applyFilterTree(array $tree): void
     {
         $this->advancedFilterTree = $tree;
-        $this->resetPage();
+        $this->resetTable();
     }
 
     /**
@@ -80,10 +84,25 @@ class ListCollectionRecords extends ListRecords
                 ->color('gray')
                 ->badge(fn () => $this->getActiveFilterCount())
                 ->slideOver()
-                ->modalContent(fn () => view('filament-studio::livewire.filter-builder-modal', [
-                    'collectionId' => $collection->id,
-                    'initialTree' => $this->advancedFilterTree,
-                ]))
+                ->modalContent(function () use ($collection) {
+                    $fields = EavQueryBuilder::getCachedFields($collection);
+
+                    $fieldOptions = $fields
+                        ->where('is_filterable', true)
+                        ->mapWithKeys(fn ($f) => [$f->column_name => $f->label ?? $f->column_name])
+                        ->all();
+
+                    $operatorsByField = $fields
+                        ->where('is_filterable', true)
+                        ->mapWithKeys(fn ($f) => [$f->column_name => FilterOperator::labelsForCast($f->eav_cast)])
+                        ->all();
+
+                    return view('filament-studio::livewire.filter-builder-alpine', [
+                        'tree' => $this->advancedFilterTree,
+                        'fieldOptions' => $fieldOptions,
+                        'operatorsByField' => $operatorsByField,
+                    ]);
+                })
                 ->modalSubmitAction(false)
                 ->modalCancelAction(false),
 
