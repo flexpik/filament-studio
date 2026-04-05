@@ -81,11 +81,15 @@
             return this.operatorsByField[fieldName] || {};
         },
         apply() {
-            this.$wire.applyFilterTree(JSON.parse(JSON.stringify(this.tree)));
+            this.$wire.applyFilterTree(JSON.parse(JSON.stringify(this.tree))).then(() => {
+                this.$wire.unmountAction();
+            });
         },
         clear() {
             this.tree = { logic: 'and', rules: [] };
-            this.$wire.applyFilterTree(JSON.parse(JSON.stringify(this.tree)));
+            this.$wire.applyFilterTree(JSON.parse(JSON.stringify(this.tree))).then(() => {
+                this.$wire.unmountAction();
+            });
         }
     }"
 >

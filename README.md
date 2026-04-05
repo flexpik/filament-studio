@@ -15,6 +15,68 @@
 
 Filament Studio turns your Filament admin panel into a flexible data platform. Define custom data structures through a visual interface, and the plugin handles the rest: forms, tables, filters, API endpoints, dashboards, and access control — all powered by an EAV (Entity-Attribute-Value) storage engine.
 
+## Screenshots
+
+<details>
+<summary>Collections list</summary>
+<img src="https://raw.githubusercontent.com/flexpik/filament-studio/main/art/collections-list.png" alt="Collections List" />
+</details>
+
+<details>
+<summary>Create collection — Basic Info</summary>
+<img src="https://raw.githubusercontent.com/flexpik/filament-studio/main/art/create-collection-basic-info.png" alt="Create Collection — Basic Info" />
+</details>
+
+<details>
+<summary>Create collection — System Fields</summary>
+<img src="https://raw.githubusercontent.com/flexpik/filament-studio/main/art/create-collection-system-fields.png" alt="Create Collection — System Fields" />
+</details>
+
+<details>
+<summary>Create collection — Settings</summary>
+<img src="https://raw.githubusercontent.com/flexpik/filament-studio/main/art/create-collection-settings.png" alt="Create Collection — Settings" />
+</details>
+
+<details>
+<summary>Fields list</summary>
+<img src="https://raw.githubusercontent.com/flexpik/filament-studio/main/art/fields-list.png" alt="Fields List" />
+</details>
+
+<details>
+<summary>Field editor</summary>
+<img src="https://raw.githubusercontent.com/flexpik/filament-studio/main/art/field-editor.png" alt="Field Editor" />
+</details>
+
+<details>
+<summary>Advanced filter builder</summary>
+<img src="https://raw.githubusercontent.com/flexpik/filament-studio/main/art/advanced-filter.png" alt="Advanced Filter Builder" />
+</details>
+
+<details>
+<summary>Version history</summary>
+<img src="https://raw.githubusercontent.com/flexpik/filament-studio/main/art/version-history.png" alt="Version History" />
+</details>
+
+<details>
+<summary>Dashboard editor</summary>
+<img src="https://raw.githubusercontent.com/flexpik/filament-studio/main/art/dashboard-editor.png" alt="Dashboard Editor" />
+</details>
+
+<details>
+<summary>API Keys</summary>
+<img src="https://raw.githubusercontent.com/flexpik/filament-studio/main/art/api-keys-list.png" alt="API Keys List" />
+</details>
+
+<details>
+<summary>API Key editor</summary>
+<img src="https://raw.githubusercontent.com/flexpik/filament-studio/main/art/api-key-editor.png" alt="API Key Editor" />
+</details>
+
+<details>
+<summary>API Documentation</summary>
+<img src="https://raw.githubusercontent.com/flexpik/filament-studio/main/art/api-documentation.png" alt="API Documentation" />
+</details>
+
 ## Why Filament Studio?
 
 - **No migrations per collection** — Add new data types at runtime without touching your codebase
