@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://raw.githubusercontent.com/flexpik/filament-studio/main/art/preview.png" alt="Filament Studio — Plugin Preview" style="width: 100%; max-width: 800px;" />
+    <img class="filament-hidden" src="https://raw.githubusercontent.com/flexpik/filament-studio/main/art/preview.png" alt="Filament Studio — Plugin Preview" style="width: 100%; max-width: 800px;" />
 </p>
 
 <p align="center">
