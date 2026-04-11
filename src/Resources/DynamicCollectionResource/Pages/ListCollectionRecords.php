@@ -159,7 +159,8 @@ class ListCollectionRecords extends ListRecords
                 }),
 
             Actions\CreateAction::make()
-                ->label('Create '.$collection->label),
+                ->label('Create '.$collection->label)
+                ->visible(fn (): bool => DynamicCollectionResource::canCreate()),
         ];
     }
 

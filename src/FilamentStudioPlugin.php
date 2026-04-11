@@ -130,12 +130,14 @@ class FilamentStudioPlugin implements Plugin
     public function getCollectionNavigationItems(): array
     {
         $tenant = Filament::getTenant();
+        $user = auth()->user();
 
         return StudioCollection::query()
             ->forTenant($tenant?->getKey())
             ->visible()
             ->orderBy('name')
             ->get()
+            ->filter(fn (StudioCollection $collection) => $user?->can('viewRecords', $collection) ?? false)
             ->map(fn (StudioCollection $collection) => NavigationItem::make($collection->label_plural)
                 ->group($this->navigationGroup)
                 ->icon($collection->icon ?? 'heroicon-o-table-cells')
@@ -155,6 +157,10 @@ class FilamentStudioPlugin implements Plugin
      */
     public function getDashboardNavigationItems(): array
     {
+        if (! StudioDashboardPage::canAccess()) {
+            return [];
+        }
+
         $tenantId = Filament::getTenant()?->getKey();
 
         $dashboards = StudioDashboard::query()

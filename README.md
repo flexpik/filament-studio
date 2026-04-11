@@ -77,6 +77,11 @@ Filament Studio turns your Filament admin panel into a flexible data platform. D
 <img src="https://raw.githubusercontent.com/flexpik/filament-studio/main/art/api-documentation.png" alt="API Documentation" />
 </details>
 
+<details>
+<summary>Collection permissions</summary>
+<img src="https://raw.githubusercontent.com/flexpik/filament-studio/main/art/collection-permissions.png" alt="Collection Permissions" />
+</details>
+
 ## Why Filament Studio?
 
 - **No migrations per collection** — Add new data types at runtime without touching your codebase
@@ -130,9 +135,15 @@ Full tenant isolation across all models. Every collection, record, dashboard, an
 
 Optional snapshot-based version history with restore capability. Optional soft deletes to recover deleted records.
 
-### Authorization
+### Authorization & Spatie Permissions
 
-Policy-based access control with granular permissions for collections, records, fields, and API keys. Works with Spatie Permission or any Laravel Gate implementation.
+Policy-based access control with granular per-collection permissions. When `spatie/laravel-permission` is installed, Filament Studio automatically syncs permissions for each collection:
+
+- **Per-collection CRUD permissions** — `studio.collection.{slug}.viewRecords`, `createRecord`, `updateRecord`, `deleteRecord`
+- **Global permissions** — `studio.manageFields`, `studio.manageApiKeys`
+- **Auto-sync** — Permissions are created/removed automatically when collections are created, renamed, or deleted
+- **Navigation & action enforcement** — UI elements (navigation items, create/edit/delete buttons) are hidden when the user lacks the corresponding permission
+- **Graceful fallback** — If Spatie Permission is not installed, all actions are allowed by default
 
 ## Quick Start
 

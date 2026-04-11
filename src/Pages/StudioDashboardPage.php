@@ -11,6 +11,7 @@ use Flexpik\FilamentStudio\Models\StudioDashboard;
 use Flexpik\FilamentStudio\Models\StudioPanel;
 use Flexpik\FilamentStudio\Panels\PanelTypeRegistry;
 use Illuminate\Database\QueryException;
+use Spatie\Permission\Exceptions\PermissionDoesNotExist;
 
 class StudioDashboardPage extends Page
 {
@@ -23,6 +24,23 @@ class StudioDashboardPage extends Page
     public ?StudioDashboard $dashboard = null;
 
     public string $dashboardSlug = '';
+
+    public static function canAccess(array $parameters = []): bool
+    {
+        $user = auth()->user();
+
+        if (! $user || ! method_exists($user, 'hasPermissionTo')) {
+            return $user !== null;
+        }
+
+        $separator = config('filament-shield.permissions.separator', ':');
+
+        try {
+            return $user->hasPermissionTo("View{$separator}StudioDashboardPage");
+        } catch (PermissionDoesNotExist) {
+            return false;
+        }
+    }
 
     public function mount(?string $dashboardSlug = null): void
     {

@@ -54,7 +54,12 @@ docker exec php83 /var/www/html/crud/vendor/bin/pint --dirty --format agent
 
 Mutation testing MSI targets ≥80% per module. Run `vendor/bin/pest --mutate --path=src/SomeFile.php` via Docker to check.
 
-Test suites: Unit (field types, enums, filtering, registry, condition evaluator, policies, observers) and Feature (EAV queries, models, API CRUD, Filament resources, widgets, variable resolver, tenant isolation, concurrency).
+Three test suites configured in `tests/Pest.php`:
+
+- **Unit** and **Feature** — use `TestCase` (SQLite in-memory, no Spatie Permission)
+- **Integration** — uses `SpatieTestCase` which extends `TestCase` and additionally loads `spatie/laravel-permission` migrations. Use this suite for tests that need Spatie roles/permissions.
+
+When creating new tests that need Spatie permissions, place them in `tests/Integration/` so they automatically get `SpatieTestCase`.
 
 ## Architecture
 
@@ -108,6 +113,28 @@ Custom types are registered via the plugin API: `FilamentStudioPlugin::make()->f
 
 Dashboards contain panels placed in 5 contexts (`PanelPlacement` enum): Dashboard grid, CollectionHeader, CollectionFooter, RecordHeader, RecordFooter. Each panel type has a corresponding Livewire widget in `src/Widgets/`.
 
+### Permission System
+
+Two levels of authorization, both mediated by `StudioPermission` enum:
+
+- **Global permissions**: `studio.manageFields`, `studio.manageApiKeys`
+- **Per-collection permissions**: `studio.collection.{slug}.{viewRecords|createRecord|updateRecord|deleteRecord}` — auto-synced by `PermissionRegistrar` when collections are created/updated/deleted (via observer)
+
+Spatie integration is optional — if `spatie/laravel-permission` is not installed, permission checks gracefully no-op. Three policies enforce access: `StudioCollectionPolicy`, `StudioApiKeyPolicy`, `StudioDashboardPolicy`.
+
+### Hook System
+
+Static hook registry on `FilamentStudioPlugin` for lifecycle events and schema modification:
+
+- Lifecycle: `afterTenantCreated`, `afterCollectionCreated`, `afterFieldAdded`
+- Schema modifiers: `modifyFormSchema`, `modifyTableColumns`, `modifyQuery`
+
+Registered via `FilamentStudioPlugin::afterCollectionCreated(fn ($collection) => ...)` etc.
+
+### Custom Validation Rules
+
+`src/Rules/` contains EAV-aware validation rules: `EavUniqueRule` and `EavExistsRule` — used where standard Laravel unique/exists rules can't work against the EAV value table.
+
 ### Multi-Tenancy
 
 All major models scope by `tenant_id`. Queries auto-filter to the current tenant.
@@ -122,3 +149,5 @@ All major models scope by `tenant_id`. Queries auto-filter to the current tenant
 - Factories exist for all models in `database/factories/`
 - Config also controls REST API settings (`api.enabled`, `api.prefix`, `api.rate_limit`)
 - The package namespace is `Flexpik\FilamentStudio\` with tests under `Flexpik\FilamentStudio\Tests\`
+- CI runs tests against PHP 8.3 and 8.4 (`.github/workflows/tests.yml`)
+- Record versioning is opt-in per collection (`enable_versioning` setting) — `RecordVersioningObserver` captures JSON snapshots before/after updates

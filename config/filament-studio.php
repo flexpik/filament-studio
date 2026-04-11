@@ -25,4 +25,19 @@ return [
         'prefix' => env('STUDIO_API_PREFIX', 'api/studio'),
         'rate_limit' => env('STUDIO_API_RATE_LIMIT', 60),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Permissions
+    |--------------------------------------------------------------------------
+    |
+    | Configure how Studio registers permissions with spatie/laravel-permission.
+    | Set 'auto_register' to false to prevent automatic permission seeding.
+    | Set 'guard' to specify which auth guard the permissions belong to.
+    |
+    */
+    'permissions' => [
+        'auto_register' => env('STUDIO_PERMISSIONS_AUTO_REGISTER', true),
+        'guard' => env('STUDIO_PERMISSIONS_GUARD'),
+    ],
 ];

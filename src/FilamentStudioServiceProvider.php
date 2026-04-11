@@ -11,8 +11,10 @@ use Flexpik\FilamentStudio\FieldTypes\FieldTypeRegistry;
 use Flexpik\FilamentStudio\FieldTypes\Types;
 use Flexpik\FilamentStudio\Models\StudioApiKey;
 use Flexpik\FilamentStudio\Models\StudioCollection;
+use Flexpik\FilamentStudio\Models\StudioDashboard;
 use Flexpik\FilamentStudio\Models\StudioRecord;
 use Flexpik\FilamentStudio\Observers\RecordVersioningObserver;
+use Flexpik\FilamentStudio\Observers\StudioCollectionObserver;
 use Flexpik\FilamentStudio\Panels\PanelTypeRegistry;
 use Flexpik\FilamentStudio\Panels\Types\BarChartPanel;
 use Flexpik\FilamentStudio\Panels\Types\LabelPanel;
@@ -25,8 +27,10 @@ use Flexpik\FilamentStudio\Panels\Types\TimeSeriesPanel;
 use Flexpik\FilamentStudio\Panels\Types\VariablePanel;
 use Flexpik\FilamentStudio\Policies\StudioApiKeyPolicy;
 use Flexpik\FilamentStudio\Policies\StudioCollectionPolicy;
+use Flexpik\FilamentStudio\Policies\StudioDashboardPolicy;
 use Flexpik\FilamentStudio\Services\EavQueryBuilder;
 use Flexpik\FilamentStudio\Services\VariableResolver;
+use Flexpik\FilamentStudio\Support\PermissionRegistrar;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -136,12 +140,20 @@ class FilamentStudioServiceProvider extends PackageServiceProvider
         \Livewire\Livewire::component('filter-builder', Livewire\FilterBuilder::class);
 
         StudioRecord::observe(RecordVersioningObserver::class);
+        StudioCollection::observe(StudioCollectionObserver::class);
 
         Gate::policy(StudioCollection::class, StudioCollectionPolicy::class);
+        Gate::policy(StudioDashboard::class, StudioDashboardPolicy::class);
         Gate::policy(StudioApiKey::class, StudioApiKeyPolicy::class);
 
         if (class_exists(ActivitylogServiceProvider::class)) {
             $this->registerActivityLogging();
+        }
+
+        if (config('filament-studio.permissions.auto_register', true)) {
+            $this->app->booted(function () {
+                PermissionRegistrar::sync(config('filament-studio.permissions.guard'));
+            });
         }
 
         RateLimiter::for('studio-api', function ($request) {

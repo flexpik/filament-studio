@@ -124,17 +124,17 @@ class DynamicCollectionResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return static::resolveCollection()->label;
+        return static::resolveCollectionOrNull()?->label ?? 'Record';
     }
 
     public static function getPluralModelLabel(): string
     {
-        return static::resolveCollection()->label_plural;
+        return static::resolveCollectionOrNull()?->label_plural ?? 'Records';
     }
 
     public static function getNavigationLabel(): string
     {
-        return static::resolveCollection()->label_plural;
+        return static::resolveCollectionOrNull()?->label_plural ?? 'Records';
     }
 
     public static function form(Schema $schema): Schema
@@ -178,12 +178,15 @@ class DynamicCollectionResource extends Resource
             ->filters(DynamicFiltersBuilder::build($collection))
             ->actions([
                 ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->visible(fn (): bool => static::canEdit(null)),
+                DeleteAction::make()
+                    ->visible(fn (): bool => static::canDelete(null)),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->visible(fn (): bool => static::canDelete(null)),
                 ]),
             ]);
     }

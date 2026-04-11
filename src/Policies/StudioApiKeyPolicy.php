@@ -3,6 +3,7 @@
 namespace Flexpik\FilamentStudio\Policies;
 
 use Filament\Facades\Filament;
+use Flexpik\FilamentStudio\Enums\StudioPermission;
 use Flexpik\FilamentStudio\Models\StudioApiKey;
 use Illuminate\Foundation\Auth\User;
 
@@ -11,7 +12,7 @@ class StudioApiKeyPolicy
     public function viewAny(User $user): bool
     {
         if (method_exists($user, 'hasPermissionTo')) {
-            return $user->hasPermissionTo('studio.manageApiKeys');
+            return $user->hasPermissionTo(StudioPermission::ManageApiKeys->value);
         }
 
         return true;
@@ -20,7 +21,7 @@ class StudioApiKeyPolicy
     public function view(User $user, StudioApiKey $apiKey): bool
     {
         if (method_exists($user, 'hasPermissionTo')) {
-            return $user->hasPermissionTo('studio.manageApiKeys');
+            return $user->hasPermissionTo(StudioPermission::ManageApiKeys->value);
         }
 
         return true;
@@ -29,7 +30,7 @@ class StudioApiKeyPolicy
     public function create(User $user): bool
     {
         if (method_exists($user, 'hasPermissionTo')) {
-            return $user->hasPermissionTo('studio.manageApiKeys');
+            return $user->hasPermissionTo(StudioPermission::ManageApiKeys->value);
         }
 
         return true;
@@ -42,7 +43,7 @@ class StudioApiKeyPolicy
         }
 
         if (method_exists($user, 'hasPermissionTo')) {
-            return $user->hasPermissionTo('studio.manageApiKeys');
+            return $user->hasPermissionTo(StudioPermission::ManageApiKeys->value);
         }
 
         return true;
@@ -55,7 +56,7 @@ class StudioApiKeyPolicy
         }
 
         if (method_exists($user, 'hasPermissionTo')) {
-            return $user->hasPermissionTo('studio.manageApiKeys');
+            return $user->hasPermissionTo(StudioPermission::ManageApiKeys->value);
         }
 
         return true;

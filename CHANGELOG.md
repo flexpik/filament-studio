@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-04-11
+
+### Added
+
+- **Spatie Permission Integration** — Automatic per-collection permission sync when `spatie/laravel-permission` is installed. Each collection gets four granular permissions (`viewRecords`, `createRecord`, `updateRecord`, `deleteRecord`) under the `studio.collection.{slug}.*` namespace
+- **StudioPermission Enum** — Single source of truth for all permission strings, with helpers for generating collection-specific permission names and labels
+- **PermissionRegistrar Service** — Detects Spatie Permission at runtime, syncs global and per-collection permissions, and handles collection renames by removing old and creating new permission entries
+- **Auto-Sync via Observer** — Permissions are automatically created when a collection is created, updated on rename, and removed on deletion
+- **Policy Enforcement** — `StudioCollectionPolicy` checks per-collection permissions for view, create, update, and delete operations. `StudioApiKeyPolicy` and `StudioDashboardPolicy` enforce global permission checks
+- **UI Permission Enforcement** — Navigation items, Create/Edit/Delete actions, and dashboard pages are hidden when the user lacks the required permission
+- **Collection Permissions Screenshot** — Added `art/collection-permissions.png` showing the per-collection RBAC interface
+
+### Changed
+
+- **Policies refactored** to use `StudioPermission` enum instead of hardcoded permission strings
+- **Dashboard page** uses Shield page permission for access control
+
 ## [1.0.3] - 2026-04-04
 
 ### Added
@@ -82,7 +99,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Configurable Table Prefix** to avoid naming conflicts
 - **Migration Log Tracking** for schema change auditing
 
-[Unreleased]: https://github.com/flexpik/filament-studio/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/flexpik/filament-studio/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/flexpik/filament-studio/compare/v1.0.4...v1.1.0
 [1.0.3]: https://github.com/flexpik/filament-studio/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/flexpik/filament-studio/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/flexpik/filament-studio/compare/v1.0.0...v1.0.1
