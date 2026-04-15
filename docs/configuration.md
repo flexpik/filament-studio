@@ -15,6 +15,13 @@ return [
         'prefix'  => env('STUDIO_API_PREFIX', 'api/studio'),
         'rate_limit' => env('STUDIO_API_RATE_LIMIT', 60),
     ],
+
+    // Multilingual settings
+    'locales' => [
+        'enabled' => env('STUDIO_LOCALES_ENABLED', false),
+        'available' => ['en'],
+        'default' => 'en',
+    ],
 ];
 ```
 
@@ -24,6 +31,9 @@ return [
 | `api.enabled` | `false` | Enable the auto-generated REST API. |
 | `api.prefix` | `api/studio` | URL prefix for API routes. |
 | `api.rate_limit` | `60` | Maximum API requests per minute (per API key or IP). |
+| `locales.enabled` | `false` | Enable multilingual content support. See [Multilingual](multilingual.md). |
+| `locales.available` | `['en']` | List of available locale codes. |
+| `locales.default` | `'en'` | Default locale used when no locale is specified or as fallback. |
 
 ## Plugin Options
 

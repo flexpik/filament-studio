@@ -37,6 +37,7 @@ use Illuminate\Support\Carbon;
  * @property bool $is_filterable
  * @property bool $is_disabled_on_create
  * @property bool $is_disabled_on_edit
+ * @property bool $is_translatable
  * @property array|null $validation_rules
  * @property array|null $settings
  * @property array|null $translations
@@ -75,6 +76,7 @@ class StudioField extends Model
             'is_filterable' => 'boolean',
             'is_disabled_on_create' => 'boolean',
             'is_disabled_on_edit' => 'boolean',
+            'is_translatable' => 'boolean',
             'validation_rules' => 'array',
             'settings' => 'array',
             'translations' => 'array',
@@ -121,6 +123,30 @@ class StudioField extends Model
     public function eavColumn(): string
     {
         return $this->eav_cast->column();
+    }
+
+    /**
+     * Get a field attribute with locale-aware translation from the translations JSON.
+     * Falls back to the base attribute value if no translation exists.
+     */
+    public function getTranslatedAttribute(string $attribute): ?string
+    {
+        $resolver = app(\Flexpik\FilamentStudio\Services\LocaleResolver::class);
+
+        if (! $resolver->isEnabled()) {
+            return $this->{$attribute};
+        }
+
+        $locale = $resolver->resolve($this->collection);
+
+        $translations = $this->translations ?? [];
+        $attributeTranslations = $translations[$attribute] ?? [];
+
+        if (isset($attributeTranslations[$locale])) {
+            return $attributeTranslations[$locale];
+        }
+
+        return $this->{$attribute};
     }
 
     protected static function newFactory(): StudioFieldFactory

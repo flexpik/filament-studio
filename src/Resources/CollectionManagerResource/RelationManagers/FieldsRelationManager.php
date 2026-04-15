@@ -255,6 +255,17 @@ class FieldsRelationManager extends RelationManager
                     Forms\Components\Toggle::make('is_hidden_in_table')
                         ->label('Hidden in Table')
                         ->helperText('Hide this field from the record listing table.'),
+                    Forms\Components\Toggle::make('is_translatable')
+                        ->label('Translatable')
+                        ->helperText('Store separate values per locale for this field.')
+                        ->visible(function () {
+                            if (! config('filament-studio.locales.enabled', false)) {
+                                return false;
+                            }
+                            $collection = $this->getOwnerRecord();
+
+                            return $collection instanceof StudioCollection && ! empty($collection->supported_locales);
+                        }),
                 ])
                 ->columns(2),
 

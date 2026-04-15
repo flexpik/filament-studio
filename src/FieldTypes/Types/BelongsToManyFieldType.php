@@ -68,12 +68,17 @@ class BelongsToManyFieldType extends AbstractFieldType
 
             $valCol = $field->eav_cast->column();
 
+            $locale = app(\Flexpik\FilamentStudio\Services\LocaleResolver::class)
+                ->defaultLocale($collection);
+
             return $collection->records()
-                ->join('studio_values', function ($join) use ($field) {
+                ->join('studio_values', function ($join) use ($field, $locale) {
                     $join->on('studio_records.id', '=', 'studio_values.record_id')
-                        ->where('studio_values.field_id', '=', $field->id);
+                        ->where('studio_values.field_id', '=', $field->id)
+                        ->where('studio_values.locale', '=', $locale);
                 })
                 ->pluck("studio_values.{$valCol}", 'studio_records.id')
+                ->filter()
                 ->toArray();
         });
 

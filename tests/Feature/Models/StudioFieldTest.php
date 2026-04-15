@@ -82,3 +82,17 @@ it('enforces unique column_name per collection', function () {
 
     StudioField::factory()->create(['collection_id' => $collection->id, 'column_name' => 'title']);
 })->throws(QueryException::class);
+
+it('casts is_translatable as boolean', function () {
+    $field = StudioField::factory()->create([
+        'collection_id' => StudioCollection::factory()->create()->id,
+        'is_translatable' => true,
+    ]);
+
+    expect($field->is_translatable)->toBeTrue();
+
+    $field->update(['is_translatable' => false]);
+    $field->refresh();
+
+    expect($field->is_translatable)->toBeFalse();
+});

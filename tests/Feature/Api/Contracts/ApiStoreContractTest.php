@@ -68,19 +68,22 @@ it('returns 201 with created record resource schema on success', function () {
     $response->assertStatus(201);
 
     $response->assertJsonStructure([
-        'uuid',
-        'data',
-        'created_by',
-        'updated_by',
-        'created_at',
-        'updated_at',
+        'data' => [
+            'uuid',
+            'data',
+            'created_by',
+            'updated_by',
+            'created_at',
+            'updated_at',
+        ],
+        '_meta' => ['locale'],
     ]);
 
-    expect($response->json('uuid'))->toBeString()->not->toBeEmpty();
-    expect($response->json('data.name'))->toBe('Widget');
-    expect($response->json('data.quantity'))->toBe(10);
-    expect($response->json('created_at'))->toBeString();
-    expect($response->json('updated_at'))->toBeString();
+    expect($response->json('data.uuid'))->toBeString()->not->toBeEmpty();
+    expect($response->json('data.data.name'))->toBe('Widget');
+    expect($response->json('data.data.quantity'))->toBe(10);
+    expect($response->json('data.created_at'))->toBeString();
+    expect($response->json('data.updated_at'))->toBeString();
 });
 
 it('returns 422 with field-level error structure when validation fails', function () {
@@ -136,6 +139,6 @@ it('allows optional fields to be omitted from the request body', function () {
 
     $response->assertStatus(201);
 
-    expect($response->json('uuid'))->toBeString()->not->toBeEmpty();
-    expect($response->json('data.name'))->toBe('Minimal Product');
+    expect($response->json('data.uuid'))->toBeString()->not->toBeEmpty();
+    expect($response->json('data.data.name'))->toBe('Minimal Product');
 });

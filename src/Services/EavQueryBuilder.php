@@ -17,6 +17,7 @@ use Flexpik\FilamentStudio\Models\StudioRecord;
 use Flexpik\FilamentStudio\Models\StudioRecordVersion;
 use Flexpik\FilamentStudio\Models\StudioValue;
 use Flexpik\FilamentStudio\Observers\RecordVersioningObserver;
+use Flexpik\FilamentStudio\Services\LocaleResolver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -42,6 +43,8 @@ class EavQueryBuilder
 
     /** @var array<array{field: string, relatedCollection: StudioCollection, displayField: string}> */
     protected array $relations = [];
+
+    protected ?string $locale = null;
 
     /** @var Collection<int, StudioField>|null */
     protected ?Collection $fieldCache = null;
@@ -73,6 +76,31 @@ class EavQueryBuilder
         $this->tenantId = $tenantId;
 
         return $this;
+    }
+
+    public function locale(?string $locale): static
+    {
+        $this->locale = $locale;
+
+        return $this;
+    }
+
+    protected function getEffectiveLocale(): string
+    {
+        if ($this->locale) {
+            return $this->locale;
+        }
+
+        return app(LocaleResolver::class)->defaultLocale($this->collection);
+    }
+
+    protected function getFieldLocale(StudioField $field): string
+    {
+        if ($field->is_translatable) {
+            return $this->getEffectiveLocale();
+        }
+
+        return app(LocaleResolver::class)->defaultLocale($this->collection);
     }
 
     /**
@@ -205,13 +233,20 @@ class EavQueryBuilder
      */
     protected function fetchValues(array $recordIds): Collection
     {
+        $activeLocale = $this->getEffectiveLocale();
+        $defaultLocale = app(LocaleResolver::class)->defaultLocale($this->collection);
+        $localesToFetch = array_unique([$activeLocale, $defaultLocale]);
+
         $query = StudioValue::query()
             ->join($this->fieldsTable, "{$this->fieldsTable}.id", '=', "{$this->valuesTable}.field_id")
             ->whereIn("{$this->valuesTable}.record_id", $recordIds)
+            ->whereIn("{$this->valuesTable}.locale", $localesToFetch)
             ->select([
                 "{$this->valuesTable}.record_id",
                 "{$this->fieldsTable}.column_name",
                 "{$this->fieldsTable}.eav_cast",
+                "{$this->fieldsTable}.is_translatable",
+                "{$this->valuesTable}.locale",
                 "{$this->valuesTable}.val_text",
                 "{$this->valuesTable}.val_integer",
                 "{$this->valuesTable}.val_decimal",
@@ -233,7 +268,9 @@ class EavQueryBuilder
      */
     protected function assembleResults(Collection $records, Collection $groupedValues): array
     {
-        $items = $records->map(function ($record) use ($groupedValues) {
+        $activeLocale = $this->getEffectiveLocale();
+
+        $items = $records->map(function ($record) use ($groupedValues, $activeLocale) {
             $obj = new \stdClass;
             $obj->id = $record->id;
             $obj->uuid = $record->uuid;
@@ -242,9 +279,13 @@ class EavQueryBuilder
 
             $recordValues = $groupedValues->get($record->id, collect());
 
-            foreach ($recordValues as $value) {
+            // Group by column_name and pick the best locale match
+            $byColumn = $recordValues->groupBy('column_name');
+            foreach ($byColumn as $columnName => $columnValues) {
+                $activeValue = $columnValues->firstWhere('locale', $activeLocale);
+                $fallbackValue = $columnValues->first();
+                $value = $activeValue ?? $fallbackValue;
                 $cast = EavCast::from($value->eav_cast);
-                $columnName = $value->column_name;
                 $obj->{$columnName} = $this->castValue($value, $cast);
             }
 
@@ -798,14 +839,27 @@ class EavQueryBuilder
     {
         $query = $this->buildBaseQuery();
 
+        $activeLocale = $this->getEffectiveLocale();
+        $defaultLocale = app(LocaleResolver::class)->defaultLocale($this->collection);
+
         // Add subquery selects for each field so values are accessible as attributes
         foreach ($this->getFields() as $field) {
             $column = $field->eav_cast->column();
 
             $subquery = StudioValue::query()
                 ->whereColumn("{$this->valuesTable}.record_id", "{$this->recordsTable}.id")
-                ->where("{$this->valuesTable}.field_id", $field->id)
-                ->limit(1);
+                ->where("{$this->valuesTable}.field_id", $field->id);
+
+            // For translatable fields with a non-default locale, prefer active locale with fallback
+            if ($field->is_translatable && $activeLocale !== $defaultLocale) {
+                $subquery->whereIn("{$this->valuesTable}.locale", [$activeLocale, $defaultLocale])
+                    ->orderByRaw("CASE WHEN {$this->valuesTable}.locale = ? THEN 0 ELSE 1 END", [$activeLocale]);
+            } else {
+                $fieldLocale = $this->getFieldLocale($field);
+                $subquery->where("{$this->valuesTable}.locale", $fieldLocale);
+            }
+
+            $subquery->limit(1);
 
             // JSON columns need unwrapping to strip the JSON string quotes.
             // MySQL uses JSON_UNQUOTE, SQLite uses json_extract with '$'.
@@ -830,17 +884,38 @@ class EavQueryBuilder
 
     /**
      * Get a flat array of column_name => value for a given record.
+     * For translatable fields, returns the active locale's value with fallback to default locale.
      *
      * @return array<string, mixed>
      */
     public function getRecordData(StudioRecord $record): array
     {
+        return $this->getRecordDataWithMeta($record)['data'];
+    }
+
+    /**
+     * Get record data along with fallback metadata.
+     * Returns ['data' => [...], 'fallbacks' => [...]] where fallbacks lists
+     * column names that fell back to the default locale.
+     *
+     * @return array{data: array<string, mixed>, fallbacks: array<string>}
+     */
+    public function getRecordDataWithMeta(StudioRecord $record): array
+    {
+        $activeLocale = $this->getEffectiveLocale();
+        $defaultLocale = app(LocaleResolver::class)->defaultLocale($this->collection);
+
+        $localesToFetch = array_unique([$activeLocale, $defaultLocale]);
+
         $values = StudioValue::query()
             ->join($this->fieldsTable, "{$this->fieldsTable}.id", '=', "{$this->valuesTable}.field_id")
             ->where("{$this->valuesTable}.record_id", $record->id)
+            ->whereIn("{$this->valuesTable}.locale", $localesToFetch)
             ->select([
                 "{$this->fieldsTable}.column_name",
                 "{$this->fieldsTable}.eav_cast",
+                "{$this->fieldsTable}.is_translatable",
+                "{$this->valuesTable}.locale",
                 "{$this->valuesTable}.val_text",
                 "{$this->valuesTable}.val_integer",
                 "{$this->valuesTable}.val_decimal",
@@ -851,10 +926,74 @@ class EavQueryBuilder
             ->get();
 
         $data = [];
-        /** @var object{eav_cast: string, column_name: string, val_text: mixed, val_integer: mixed, val_decimal: mixed, val_boolean: mixed, val_datetime: mixed, val_json: mixed} $value */
-        foreach ($values as $value) {
-            $cast = EavCast::from($value->eav_cast);
-            $data[$value->column_name] = $this->castValue($value, $cast);
+        $fallbacks = [];
+
+        // Group values by column_name
+        $grouped = $values->groupBy('column_name');
+
+        foreach ($grouped as $columnName => $columnValues) {
+            $activeValue = $columnValues->firstWhere('locale', $activeLocale);
+            $defaultValue = $columnValues->firstWhere('locale', $defaultLocale);
+
+            if ($activeValue) {
+                $cast = EavCast::from($activeValue->eav_cast);
+                $data[$columnName] = $this->castValue($activeValue, $cast);
+            } elseif ($defaultValue) {
+                $cast = EavCast::from($defaultValue->eav_cast);
+                $data[$columnName] = $this->castValue($defaultValue, $cast);
+                if ($defaultValue->is_translatable) {
+                    $fallbacks[] = $columnName;
+                }
+            }
+        }
+
+        return ['data' => $data, 'fallbacks' => $fallbacks];
+    }
+
+    /**
+     * Get all locale data for a record.
+     * Translatable fields return as ['en' => 'val', 'fr' => 'val'].
+     * Non-translatable fields return as plain values.
+     *
+     * @return array<string, mixed>
+     */
+    public function getAllLocaleData(StudioRecord $record): array
+    {
+        $values = StudioValue::query()
+            ->join($this->fieldsTable, "{$this->fieldsTable}.id", '=', "{$this->valuesTable}.field_id")
+            ->where("{$this->valuesTable}.record_id", $record->id)
+            ->select([
+                "{$this->fieldsTable}.column_name",
+                "{$this->fieldsTable}.eav_cast",
+                "{$this->fieldsTable}.is_translatable",
+                "{$this->valuesTable}.locale",
+                "{$this->valuesTable}.val_text",
+                "{$this->valuesTable}.val_integer",
+                "{$this->valuesTable}.val_decimal",
+                "{$this->valuesTable}.val_boolean",
+                "{$this->valuesTable}.val_datetime",
+                "{$this->valuesTable}.val_json",
+            ])
+            ->get();
+
+        $data = [];
+        $grouped = $values->groupBy('column_name');
+
+        foreach ($grouped as $columnName => $columnValues) {
+            $firstValue = $columnValues->first();
+            $isTranslatable = (bool) $firstValue->is_translatable;
+
+            if ($isTranslatable) {
+                $localeMap = [];
+                foreach ($columnValues as $value) {
+                    $cast = EavCast::from($value->eav_cast);
+                    $localeMap[$value->locale] = $this->castValue($value, $cast);
+                }
+                $data[$columnName] = $localeMap;
+            } else {
+                $cast = EavCast::from($firstValue->eav_cast);
+                $data[$columnName] = $this->castValue($firstValue, $cast);
+            }
         }
 
         return $data;
@@ -920,6 +1059,7 @@ class EavQueryBuilder
                     [
                         'record_id' => $recordId,
                         'field_id' => $field->id,
+                        'locale' => $this->getFieldLocale($field),
                     ],
                     $updateData
                 );
@@ -980,10 +1120,23 @@ class EavQueryBuilder
 
             $eavColumn = $field->eavColumn();
 
-            StudioValue::updateOrCreate(
-                ['record_id' => $record->id, 'field_id' => $field->id],
-                [$eavColumn => $value]
-            );
+            if (is_array($value) && $field->is_translatable) {
+                // Translatable field: restore each locale
+                foreach ($value as $locale => $localeValue) {
+                    StudioValue::updateOrCreate(
+                        ['record_id' => $record->id, 'field_id' => $field->id, 'locale' => $locale],
+                        [$eavColumn => $localeValue]
+                    );
+                }
+            } else {
+                // Non-translatable field or legacy flat snapshot
+                $fieldLocale = $this->getFieldLocale($field);
+
+                StudioValue::updateOrCreate(
+                    ['record_id' => $record->id, 'field_id' => $field->id, 'locale' => $fieldLocale],
+                    [$eavColumn => $value]
+                );
+            }
         }
 
         $record->touch();
@@ -1008,6 +1161,7 @@ class EavQueryBuilder
             $row = [
                 'record_id' => $recordId,
                 'field_id' => $field->id,
+                'locale' => $this->getFieldLocale($field),
                 'val_text' => null,
                 'val_integer' => null,
                 'val_decimal' => null,

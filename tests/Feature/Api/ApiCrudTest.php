@@ -65,7 +65,7 @@ it('shows a single record by uuid', function () {
     $response = $this->getJson("/api/studio/posts/{$record->uuid}", apiHeaders($this->plainKey));
 
     $response->assertOk();
-    $response->assertJsonPath('uuid', $record->uuid);
+    $response->assertJsonPath('data.uuid', $record->uuid);
 });
 
 it('creates a record with valid data', function () {
@@ -77,7 +77,7 @@ it('creates a record with valid data', function () {
     ], apiHeaders($this->plainKey));
 
     $response->assertStatus(201);
-    $response->assertJsonPath('data.title', 'New Post');
+    $response->assertJsonPath('data.data.title', 'New Post');
 
     expect(StudioRecord::query()->where('collection_id', $this->collection->id)->count())->toBe(1);
 });
@@ -92,7 +92,7 @@ it('updates a record', function () {
     ], apiHeaders($this->plainKey));
 
     $response->assertOk();
-    $response->assertJsonPath('data.title', 'Updated Title');
+    $response->assertJsonPath('data.data.title', 'Updated Title');
 });
 
 it('deletes a record', function () {

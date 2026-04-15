@@ -22,3 +22,6 @@ Thumbs.db
 *.cache
 phpstan.neon
 testbench.yaml
+
+# AI-generated plans
+docs/superpowers/

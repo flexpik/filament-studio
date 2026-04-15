@@ -20,6 +20,7 @@ use Flexpik\FilamentStudio\Services\DynamicFiltersBuilder;
 use Flexpik\FilamentStudio\Services\DynamicFormSchemaBuilder;
 use Flexpik\FilamentStudio\Services\DynamicTableColumnsBuilder;
 use Flexpik\FilamentStudio\Services\EavQueryBuilder;
+use Flexpik\FilamentStudio\Services\LocaleResolver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -157,6 +158,7 @@ class DynamicCollectionResource extends Resource
             ->query(
                 EavQueryBuilder::for($collection)
                     ->tenant(Filament::getTenant()?->getKey())
+                    ->locale(app(LocaleResolver::class)->resolve($collection))
                     ->toEloquentQuery()
             )
             ->modifyQueryUsing(function (Builder $query) use ($collection, $table) {

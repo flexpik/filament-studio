@@ -129,6 +129,36 @@ class CollectionManagerResource extends Resource
                             ->collapsible()
                             ->collapsed(),
 
+                        Section::make('Multilingual')
+                            ->description('Enable per-locale content for translatable fields.')
+                            ->schema([
+                                Forms\Components\Toggle::make('multilingual_enabled')
+                                    ->label('Enable Multilingual')
+                                    ->helperText('Allow translatable fields to store values in multiple locales.')
+                                    ->live()
+                                    ->afterStateHydrated(function (Forms\Components\Toggle $component, ?StudioCollection $record) {
+                                        $component->state($record && ! empty($record->supported_locales));
+                                    })
+                                    ->dehydrated(false),
+                                Forms\Components\CheckboxList::make('supported_locales')
+                                    ->options(fn () => collect(config('filament-studio.locales.available', ['en']))
+                                        ->mapWithKeys(fn (string $locale) => [$locale => strtoupper($locale)])
+                                        ->all())
+                                    ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get): bool => (bool) $get('multilingual_enabled'))
+                                    ->helperText('Select which locales this collection supports. Leave empty to use all available locales.')
+                                    ->columns(4),
+                                Forms\Components\Select::make('default_locale')
+                                    ->options(fn () => collect(config('filament-studio.locales.available', ['en']))
+                                        ->mapWithKeys(fn (string $locale) => [$locale => strtoupper($locale)])
+                                        ->all())
+                                    ->placeholder('Use global default')
+                                    ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get): bool => (bool) $get('multilingual_enabled'))
+                                    ->helperText('The fallback locale when a translation is missing.'),
+                            ])
+                            ->collapsible()
+                            ->collapsed()
+                            ->visible(fn () => config('filament-studio.locales.enabled', false)),
+
                         Section::make('Display & Sorting')
                             ->description('Control how records are sorted and displayed in relationship dropdowns.')
                             ->schema([

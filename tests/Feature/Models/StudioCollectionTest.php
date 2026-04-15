@@ -86,3 +86,23 @@ it('allows same name for different tenants', function () {
 
     expect($second)->toBeInstanceOf(StudioCollection::class);
 });
+
+it('casts supported_locales as array and stores default_locale', function () {
+    $collection = StudioCollection::factory()->create([
+        'supported_locales' => ['en', 'fr', 'de'],
+        'default_locale' => 'en',
+    ]);
+
+    expect($collection->supported_locales)->toBe(['en', 'fr', 'de'])
+        ->and($collection->default_locale)->toBe('en');
+});
+
+it('returns null supported_locales when not set', function () {
+    $collection = StudioCollection::factory()->create([
+        'supported_locales' => null,
+        'default_locale' => null,
+    ]);
+
+    expect($collection->supported_locales)->toBeNull()
+        ->and($collection->default_locale)->toBeNull();
+});

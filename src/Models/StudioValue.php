@@ -12,6 +12,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $record_id
  * @property int $field_id
+ * @property string $locale
  * @property string|null $val_text
  * @property int|null $val_integer
  * @property float|null $val_decimal

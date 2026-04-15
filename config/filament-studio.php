@@ -40,4 +40,19 @@ return [
         'auto_register' => env('STUDIO_PERMISSIONS_AUTO_REGISTER', true),
         'guard' => env('STUDIO_PERMISSIONS_GUARD'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Multilingual
+    |--------------------------------------------------------------------------
+    |
+    | Configure multilingual support for Studio collections.
+    | When enabled, collections can opt into per-locale record values.
+    |
+    */
+    'locales' => [
+        'enabled' => env('STUDIO_LOCALES_ENABLED', false),
+        'available' => ['en'],
+        'default' => 'en',
+    ],
 ];

@@ -73,6 +73,8 @@ class RecordVersioningObserver
             ->select([
                 "{$fieldsTable}.column_name",
                 "{$fieldsTable}.eav_cast",
+                "{$fieldsTable}.is_translatable",
+                "{$valuesTable}.locale",
                 "{$valuesTable}.val_text",
                 "{$valuesTable}.val_integer",
                 "{$valuesTable}.val_decimal",
@@ -83,7 +85,7 @@ class RecordVersioningObserver
             ->get();
 
         $snapshot = [];
-        /** @var StudioValue&object{eav_cast: string, column_name: string} $value */
+        /** @var StudioValue&object{eav_cast: string, column_name: string, is_translatable: bool, locale: string|null} $value */
         foreach ($values as $value) {
             $column = match ($value->eav_cast) {
                 'text' => 'val_text',
@@ -95,7 +97,13 @@ class RecordVersioningObserver
                 default => 'val_text',
             };
 
-            $snapshot[$value->column_name] = $value->{$column};
+            $rawValue = $value->{$column};
+
+            if ($value->is_translatable) {
+                $snapshot[$value->column_name][$value->locale] = $rawValue;
+            } else {
+                $snapshot[$value->column_name] = $rawValue;
+            }
         }
 
         return $snapshot;

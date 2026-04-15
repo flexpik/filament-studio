@@ -57,22 +57,21 @@ it('returns single resource with full response schema', function () {
 
     $response->assertOk();
 
-    // Single resource is NOT wrapped in a top-level 'data' key (unlike list endpoint)
     $response->assertJsonStructure([
-        'uuid',
-        'data',
-        'created_by',
-        'updated_by',
-        'created_at',
-        'updated_at',
+        'data' => [
+            'uuid',
+            'data',
+            'created_by',
+            'updated_by',
+            'created_at',
+            'updated_at',
+        ],
+        '_meta' => ['locale', 'fallbacks'],
     ]);
 
-    // Verify there is no wrapping 'data' key at top level
-    expect($response->json())->toHaveKeys(['uuid', 'data', 'created_by', 'updated_by', 'created_at', 'updated_at']);
-
-    expect($response->json('uuid'))->toBe($record->uuid);
-    expect($response->json('created_at'))->toBeString();
-    expect($response->json('updated_at'))->toBeString();
+    expect($response->json('data.uuid'))->toBe($record->uuid);
+    expect($response->json('data.created_at'))->toBeString();
+    expect($response->json('data.updated_at'))->toBeString();
 });
 
 it('returns 404 with JSON error structure for non-existent UUID', function () {
@@ -112,6 +111,6 @@ it('returns data values matching what was stored', function () {
 
     $response->assertOk();
 
-    expect($response->json('data.title'))->toBeString()->toBe('Exact Match');
-    expect($response->json('data.views'))->toBeInt()->toBe(99);
+    expect($response->json('data.data.title'))->toBeString()->toBe('Exact Match');
+    expect($response->json('data.data.views'))->toBeInt()->toBe(99);
 });

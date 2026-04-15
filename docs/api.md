@@ -173,6 +173,78 @@ DELETE /api/studio/{collection_slug}/{uuid}
 
 If soft deletes are enabled on the collection, the record is soft-deleted rather than permanently removed.
 
+## Multilingual API Support
+
+When [multilingual content](multilingual.md) is enabled, all endpoints accept locale selection via query parameter or header.
+
+### Selecting a Locale
+
+```bash
+# Via query parameter
+curl -H "X-Api-Key: your-key" \
+     "https://your-app.com/api/studio/posts?locale=fr"
+
+# Via header
+curl -H "X-Api-Key: your-key" \
+     -H "X-Locale: fr" \
+     "https://your-app.com/api/studio/posts/550e8400"
+```
+
+The query parameter takes precedence over the header. If neither is provided, the collection's default locale is used.
+
+### Response Metadata
+
+When a locale is active, responses include a `_meta` object:
+
+```json
+{
+  "data": { "..." : "..." },
+  "_meta": {
+    "locale": "fr",
+    "fallbacks": ["slug"]
+  }
+}
+```
+
+The `fallbacks` array lists field names that had no value in the requested locale and fell back to the default locale.
+
+### All Locales Mode
+
+Retrieve all translations in a single request:
+
+```
+GET /api/studio/{collection_slug}/{uuid}?all_locales=true
+```
+
+Translatable fields are returned as nested locale objects:
+
+```json
+{
+  "data": {
+    "uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "data": {
+      "title": {"en": "My Title", "fr": "Mon Titre"},
+      "price": 29.99
+    },
+    "created_by": 1,
+    "updated_by": null,
+    "created_at": "2025-01-15T10:30:00.000000Z",
+    "updated_at": "2025-01-15T10:30:00.000000Z"
+  }
+}
+```
+
+### Writing in a Specific Locale
+
+Pass `locale` when creating or updating records to write values for that locale:
+
+```bash
+curl -X POST -H "X-Api-Key: your-key" \
+     -H "Content-Type: application/json" \
+     "https://your-app.com/api/studio/posts?locale=fr" \
+     -d '{"data": {"title": "Mon Titre"}}'
+```
+
 ## Rate Limiting
 
 API requests are rate-limited per API key (or per IP if no key). The default is 60 requests per minute, configurable via:
@@ -191,6 +263,8 @@ When the API is enabled and [Scramble](https://scramble.dedoc.co/) is installed,
 - API Key security scheme (`X-Api-Key` header)
 - Schema definitions for all endpoints
 - Request/response examples
+- Locale parameters (`locale`, `X-Locale`, `all_locales`) with enum dropdowns when multilingual is enabled
+- `_meta` response schemas with locale and fallback information
 
 ## Error Responses
 

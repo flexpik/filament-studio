@@ -2,6 +2,7 @@
     $fieldLabels = $fieldLabels ?? [];
     $fieldTypes = $fieldTypes ?? [];
     $sensitiveFields = $sensitiveFields ?? [];
+    $translatableFields = $translatableFields ?? [];
     $showRestore = $showRestore ?? false;
 
     // Build version number map: oldest = v1, newest = vN
@@ -17,6 +18,20 @@
     foreach ($versionList as $index => $version) {
         $previousSnapshots[$version->id] = $versionList[$index + 1]?->snapshot ?? null;
     }
+
+    // Collect all available locales from translatable field snapshots
+    $availableLocales = [];
+    if (!empty($translatableFields)) {
+        foreach ($versions as $version) {
+            foreach ($version->snapshot as $field => $value) {
+                if (in_array($field, $translatableFields) && is_array($value)) {
+                    $availableLocales = array_unique(array_merge($availableLocales, array_keys($value)));
+                }
+            }
+        }
+        sort($availableLocales);
+    }
+    $defaultLocale = $availableLocales[0] ?? null;
 
     // Type-aware value formatter
     $formatValue = function ($val, string $fieldName) use ($fieldTypes) {
@@ -338,9 +353,99 @@
         font-size: 0.75rem;
         color: var(--vh-text-muted);
     }
+
+    /* ── Locale switcher ── */
+    .vh__locale-bar {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0 1rem 0.5rem;
+    }
+
+    .vh__locale-label {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--vh-text-secondary);
+    }
+
+    .vh__locale-btn {
+        padding: 0.125rem 0.5rem;
+        font-size: 11px;
+        font-weight: 600;
+        border-radius: 0.375rem;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.15s, color 0.15s;
+        background-color: var(--gray-100);
+        color: var(--gray-600);
+    }
+
+    .dark .vh__locale-btn {
+        background-color: var(--gray-700);
+        color: var(--gray-300);
+    }
+
+    .vh__locale-btn:hover {
+        background-color: var(--gray-200);
+    }
+
+    .dark .vh__locale-btn:hover {
+        background-color: var(--gray-600);
+    }
+
+    .vh__locale-btn--active {
+        background-color: var(--primary-500);
+        color: #fff;
+    }
+
+    .dark .vh__locale-btn--active {
+        background-color: var(--primary-600);
+        color: #fff;
+    }
+
+    .vh__locale-btn--active:hover {
+        background-color: var(--primary-500);
+    }
+
+    .dark .vh__locale-btn--active:hover {
+        background-color: var(--primary-600);
+    }
+
+    .vh__locale-indicator {
+        display: inline-flex;
+        align-items: center;
+        margin-left: 0.25rem;
+        padding: 0.0625rem 0.25rem;
+        font-size: 9px;
+        font-weight: 600;
+        border-radius: 0.25rem;
+        background-color: var(--primary-50);
+        color: var(--primary-600);
+        vertical-align: middle;
+    }
+
+    .dark .vh__locale-indicator {
+        background-color: var(--primary-950);
+        color: var(--primary-400);
+    }
 </style>
 
-<div class="vh">
+<div class="vh" x-data="{ selectedLocale: '{{ $defaultLocale }}' }">
+    @if (!empty($availableLocales))
+        <div class="vh__locale-bar">
+            <span class="vh__locale-label">Locale:</span>
+            @foreach ($availableLocales as $locale)
+                <button
+                    type="button"
+                    x-on:click="selectedLocale = '{{ $locale }}'"
+                    :class="selectedLocale === '{{ $locale }}' ? 'vh__locale-btn vh__locale-btn--active' : 'vh__locale-btn'"
+                >
+                    {{ strtoupper($locale) }}
+                </button>
+            @endforeach
+        </div>
+    @endif
+
     <div class="vh__list">
         @forelse ($versions as $version)
             @php
@@ -360,7 +465,12 @@
                         }
                         $visibleFieldCount++;
                         $oldValue = $previousSnapshot[$field] ?? null;
-                        if ($value !== $oldValue) {
+                        if (in_array($field, $translatableFields) && is_array($value) && is_array($oldValue)) {
+                            // Compare translatable fields per-locale
+                            if (array_diff_assoc($value, $oldValue) || array_diff_assoc($oldValue, $value)) {
+                                $changedCount++;
+                            }
+                        } elseif ($value !== $oldValue) {
                             $changedCount++;
                         }
                     }
@@ -406,26 +516,64 @@
 
                         @php
                             $label = $fieldLabels[$field] ?? Str::headline($field);
-                            $displayValue = $formatValue($value, $field);
-                            $isChanged = $previousSnapshot !== null && ($value !== ($previousSnapshot[$field] ?? null));
-                            $oldValue = $previousSnapshot[$field] ?? null;
-                            $oldDisplayValue = $formatValue($oldValue, $field);
+                            $isTranslatable = in_array($field, $translatableFields) && is_array($value);
+                            $oldRaw = $previousSnapshot[$field] ?? null;
                         @endphp
 
-                        @if ($isChanged)
-                            <div class="vh__field vh__field--changed">
-                                <span class="vh__field-label">{{ $label }}</span>
-                                <span>
-                                    <span class="vh__old-value">{{ $oldDisplayValue }}</span>
-                                    <span class="vh__arrow">&rarr;</span>
-                                    <span class="vh__new-value">{{ $displayValue }}</span>
-                                </span>
-                            </div>
+                        @if ($isTranslatable)
+                            {{-- Translatable field: render per-locale with Alpine switching --}}
+                            @php
+                                $localeValues = $value;
+                                $oldLocaleValues = is_array($oldRaw) ? $oldRaw : [];
+                            @endphp
+                            @foreach ($localeValues as $locale => $localeVal)
+                                @php
+                                    $displayValue = $formatValue($localeVal, $field);
+                                    $oldLocaleVal = $oldLocaleValues[$locale] ?? null;
+                                    $oldDisplayValue = $formatValue($oldLocaleVal, $field);
+                                    $isChanged = $previousSnapshot !== null && ($localeVal !== $oldLocaleVal);
+                                @endphp
+                                <template x-if="selectedLocale === '{{ $locale }}'">
+                                    @if ($isChanged)
+                                        <div class="vh__field vh__field--changed">
+                                            <span class="vh__field-label">{{ $label }} <span class="vh__locale-indicator">{{ strtoupper($locale) }}</span></span>
+                                            <span>
+                                                <span class="vh__old-value">{{ $oldDisplayValue }}</span>
+                                                <span class="vh__arrow">&rarr;</span>
+                                                <span class="vh__new-value">{{ $displayValue }}</span>
+                                            </span>
+                                        </div>
+                                    @else
+                                        <div class="vh__field">
+                                            <span class="vh__field-label">{{ $label }} <span class="vh__locale-indicator">{{ strtoupper($locale) }}</span></span>
+                                            <span class="vh__unchanged-value">{{ $displayValue }}</span>
+                                        </div>
+                                    @endif
+                                </template>
+                            @endforeach
                         @else
-                            <div class="vh__field">
-                                <span class="vh__field-label">{{ $label }}</span>
-                                <span class="vh__unchanged-value">{{ $displayValue }}</span>
-                            </div>
+                            {{-- Non-translatable field: render as before --}}
+                            @php
+                                $displayValue = $formatValue($value, $field);
+                                $isChanged = $previousSnapshot !== null && ($value !== $oldRaw);
+                                $oldDisplayValue = $formatValue($oldRaw, $field);
+                            @endphp
+
+                            @if ($isChanged)
+                                <div class="vh__field vh__field--changed">
+                                    <span class="vh__field-label">{{ $label }}</span>
+                                    <span>
+                                        <span class="vh__old-value">{{ $oldDisplayValue }}</span>
+                                        <span class="vh__arrow">&rarr;</span>
+                                        <span class="vh__new-value">{{ $displayValue }}</span>
+                                    </span>
+                                </div>
+                            @else
+                                <div class="vh__field">
+                                    <span class="vh__field-label">{{ $label }}</span>
+                                    <span class="vh__unchanged-value">{{ $displayValue }}</span>
+                                </div>
+                            @endif
                         @endif
                     @endforeach
                 </div>

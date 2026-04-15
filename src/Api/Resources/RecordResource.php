@@ -5,6 +5,7 @@ namespace Flexpik\FilamentStudio\Api\Resources;
 use Flexpik\FilamentStudio\Models\StudioCollection;
 use Flexpik\FilamentStudio\Models\StudioRecord;
 use Flexpik\FilamentStudio\Services\EavQueryBuilder;
+use Flexpik\FilamentStudio\Services\LocaleResolver;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -29,7 +30,11 @@ class RecordResource extends JsonResource
     {
         $collection = $this->collection ?? $request->attributes->get('studio_collection');
 
-        $data = EavQueryBuilder::for($collection)->getRecordData($this->resource);
+        $locale = app(LocaleResolver::class)->resolve($collection);
+
+        $data = EavQueryBuilder::for($collection)
+            ->locale($locale)
+            ->getRecordData($this->resource);
 
         return [
             'uuid' => $this->uuid,

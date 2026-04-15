@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-04-15
+
+### Added
+
+- **Multilingual Support** — Opt-in per-locale content for translatable fields, controlled by a global `locales.enabled` config toggle
+- **Locale Column on EAV Values** — `studio_values` table gains a `locale` column with a composite unique constraint `[record_id, field_id, locale]`, enabling per-locale storage without schema-per-field changes
+- **Per-Field Translatable Flag** — Each field can be individually marked as translatable via the `is_translatable` toggle in the field editor; non-translatable fields store a single value regardless of locale
+- **Per-Collection Locale Settings** — Collections define their own `supported_locales` subset and a `default_locale` for fallback behavior
+- **LocaleResolver Service** — Centralized locale detection with a 4-level priority chain: `?locale=` query param > `X-Locale` header > session > collection/global default
+- **Locale-Aware EavQueryBuilder** — New `locale()` fluent method on the query builder. `create()`, `update()`, `getRecordData()`, and `toEloquentQuery()` all respect the active locale with automatic fallback to the default locale for missing translations
+- **Fallback Metadata** — `getRecordDataWithMeta()` returns both data and a `fallbacks` array indicating which fields are displaying fallback values from the default locale
+- **All-Locale Data Retrieval** — `getAllLocaleData()` returns translatable fields as nested locale maps (`{"en": "Hello", "fr": "Bonjour"}`) and non-translatable fields as plain values
+- **Admin Locale Switcher** — Livewire-powered locale toggle buttons displayed in the record edit page header; switching locale persists to session and reloads form data for the selected locale
+- **Collection Multilingual Toggle** — New "Multilingual" section in collection settings with locale multi-select and default locale picker, only visible when `locales.enabled` is true
+- **Field Translatable Toggle** — "Translatable" toggle in the field behavior settings section, only visible when the parent collection has multilingual enabled
+- **REST API Locale Support** — API endpoints accept `?locale=` query param or `X-Locale` header for locale-specific reads/writes; responses include `_meta.locale` and `_meta.fallbacks` metadata
+- **API All-Locales Mode** — `GET ?all_locales=true` returns translatable fields as nested locale objects in a single response
+- **OpenAPI Locale Documentation** — API docs now show `locale`, `X-Locale`, and `all_locales` parameters with enum dropdowns when multilingual is enabled, plus `_meta` response schema and locale hints in operation descriptions
+- **Multi-Locale Version Snapshots** — Record version snapshots capture all locale values for translatable fields as nested objects; version restore correctly writes back all locale rows
+- **UI Metadata Translations** — Field labels, placeholders, and hints resolve from the `translations` JSON column per active locale via `StudioField::getTranslatedAttribute()`
+
+### Changed
+
+- **EavQueryBuilder** `getRecordData()` now delegates to `getRecordDataWithMeta()` internally
+- **RecordVersioningObserver** `buildSnapshot()` produces nested locale structures for translatable fields
+- **RecordResource** API serialization is now locale-aware, resolving the active locale from the request
+- **StudioApiController** `show()`, `store()`, and `update()` endpoints return JSON responses with `_meta` locale metadata
+- **StudioDocumentTransformer** conditionally adds locale parameters and `_meta` response schemas when multilingual is enabled
+
 ## [1.1.0] - 2026-04-11
 
 ### Added
@@ -99,7 +128,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Configurable Table Prefix** to avoid naming conflicts
 - **Migration Log Tracking** for schema change auditing
 
-[Unreleased]: https://github.com/flexpik/filament-studio/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/flexpik/filament-studio/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/flexpik/filament-studio/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/flexpik/filament-studio/compare/v1.0.4...v1.1.0
 [1.0.3]: https://github.com/flexpik/filament-studio/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/flexpik/filament-studio/compare/v1.0.1...v1.0.2

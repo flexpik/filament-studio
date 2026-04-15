@@ -86,7 +86,7 @@ Filament Studio turns your Filament admin panel into a flexible data platform. D
 
 - **No migrations per collection** — Add new data types at runtime without touching your codebase
 - **Full Filament integration** — Native forms, tables, filters, and actions that look and feel like hand-crafted resources
-- **Production-ready** — Multi-tenancy, authorization, versioning, soft deletes, and audit logging out of the box
+- **Production-ready** — Multi-tenancy, multilingual content, authorization, versioning, soft deletes, and audit logging out of the box
 - **Extensible** — Register custom field types, panel types, condition resolvers, and lifecycle hooks
 
 ## Features
@@ -127,13 +127,32 @@ Auto-generated RESTful API with API key authentication, per-collection permissio
 
 Fields can be conditionally visible, required, or disabled based on form values, user permissions, page context, or custom resolvers — with cycle detection for safety.
 
+### Multilingual Content
+
+Opt-in per-locale support for translatable fields. Enable multilingual globally, then configure each collection with its own supported locales and default locale. Mark individual fields as translatable — non-translatable fields (booleans, dates, numbers) store a single value regardless of locale.
+
+- **Locale resolution** — `?locale=` query param > `X-Locale` header > session > collection default > global default
+- **Automatic fallback** — When a translation is missing, falls back to the default locale with metadata indicating which fields fell back
+- **Admin locale switcher** — Toggle between locales in the record editor; version history includes a per-locale viewer
+- **API support** — All REST endpoints accept locale selection; `?all_locales=true` returns all translations as nested objects
+- **OpenAPI documentation** — Locale parameters and `_meta` response schemas appear automatically in API docs when multilingual is enabled
+
+```php
+// config/filament-studio.php
+'locales' => [
+    'enabled' => true,
+    'available' => ['en', 'fr', 'de'],
+    'default' => 'en',
+],
+```
+
 ### Multi-Tenancy
 
 Full tenant isolation across all models. Every collection, record, dashboard, and API key is scoped to its tenant.
 
 ### Record Versioning & Soft Deletes
 
-Optional snapshot-based version history with restore capability. Optional soft deletes to recover deleted records.
+Optional snapshot-based version history with restore capability, including per-locale snapshots for translatable fields. Optional soft deletes to recover deleted records.
 
 ### Authorization & Spatie Permissions
 
@@ -262,6 +281,7 @@ This approach enables runtime schema changes without migrations while preserving
 | [Conditional Logic](docs/conditional-logic.md) | Dynamic visibility, required, and disabled states |
 | [Authorization](docs/authorization.md) | Policies, permissions, Spatie integration |
 | [Multi-Tenancy](docs/multi-tenancy.md) | Tenant scoping, lifecycle hooks |
+| [Multilingual](docs/multilingual.md) | Locale config, translatable fields, API locale support |
 | [Record Versioning](docs/versioning.md) | Snapshots, restore, soft deletes |
 | [Hooks & Events](docs/hooks.md) | Lifecycle hooks, schema modification |
 | [Custom Field Types](docs/extending/custom-field-types.md) | Building your own field types |

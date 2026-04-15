@@ -31,6 +31,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $archive_value
  * @property string|null $display_template
  * @property array|null $translations
+ * @property array|null $supported_locales
+ * @property string|null $default_locale
  * @property array|null $settings
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -61,6 +63,7 @@ class StudioCollection extends Model
             'enable_soft_deletes' => 'boolean',
             'translations' => 'array',
             'settings' => 'array',
+            'supported_locales' => 'array',
         ];
     }
 

@@ -13,6 +13,7 @@ use Flexpik\FilamentStudio\Resources\DynamicCollectionResource;
 use Flexpik\FilamentStudio\Resources\DynamicCollectionResource\Concerns\HasPanelWidgets;
 use Flexpik\FilamentStudio\Resources\DynamicCollectionResource\Concerns\ResolvesCollection;
 use Flexpik\FilamentStudio\Services\EavQueryBuilder;
+use Flexpik\FilamentStudio\Services\LocaleResolver;
 use Illuminate\Database\Eloquent\Model;
 
 class EditCollectionRecord extends EditRecord
@@ -21,6 +22,9 @@ class EditCollectionRecord extends EditRecord
     use ResolvesCollection;
 
     protected static string $resource = DynamicCollectionResource::class;
+
+    /** @var array<string> */
+    public array $fallbackFields = [];
 
     public function mount(int|string $record): void
     {
@@ -59,11 +63,18 @@ class EditCollectionRecord extends EditRecord
         /** @var StudioRecord $record */
         $record = $this->getRecord();
 
-        $eavData = EavQueryBuilder::for($collection)
-            ->tenant(Filament::getTenant()?->getKey())
-            ->getRecordData($record);
+        $locale = app(LocaleResolver::class)->resolve($collection);
 
-        return array_merge($data, $eavData);
+        $result = EavQueryBuilder::for($collection)
+            ->tenant(Filament::getTenant()?->getKey())
+            ->locale($locale)
+            ->getRecordDataWithMeta($record);
+
+        $data = array_merge($data, $result['data']);
+
+        $this->fallbackFields = $result['fallbacks'];
+
+        return $data;
     }
 
     /**
@@ -74,12 +85,14 @@ class EditCollectionRecord extends EditRecord
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
         $collection = $this->getResolvedCollection();
+        $locale = app(LocaleResolver::class)->resolve($collection);
 
         /** @var StudioRecord $studioRecord */
         $studioRecord = $record;
 
         EavQueryBuilder::for($collection)
             ->tenant(Filament::getTenant()?->getKey())
+            ->locale($locale)
             ->update($studioRecord->id, $data, auth()->id());
 
         return $record;
@@ -87,12 +100,35 @@ class EditCollectionRecord extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        $actions = [
-            Actions\ViewAction::make(),
-            Actions\DeleteAction::make(),
-        ];
-
         $collection = $this->getResolvedCollection();
+        $resolver = app(LocaleResolver::class);
+
+        $actions = [];
+
+        // Locale switcher actions
+        if ($resolver->isEnabled()
+            && ! empty($collection->supported_locales)
+            && $collection->fields()->where('is_translatable', true)->exists()
+        ) {
+            $activeLocale = $resolver->resolve($collection);
+
+            foreach ($resolver->availableLocales($collection) as $locale) {
+                $actions[] = Actions\Action::make("locale_{$locale}")
+                    ->label(strtoupper($locale))
+                    ->size('sm')
+                    ->color($activeLocale === $locale ? 'primary' : 'gray')
+                    ->action(function () use ($locale) {
+                        session(['studio_locale' => $locale]);
+                        $this->redirect(DynamicCollectionResource::getUrl('edit', [
+                            'collection_slug' => $this->collectionSlug,
+                            'record' => $this->getRecord(),
+                        ]));
+                    });
+            }
+        }
+
+        $actions[] = Actions\ViewAction::make();
+        $actions[] = Actions\DeleteAction::make();
 
         if ($collection->enable_versioning) {
             $actions[] = Actions\Action::make('versionHistory')
@@ -118,12 +154,16 @@ class EditCollectionRecord extends EditRecord
                     $sensitiveFields = $fields->where('field_type', 'password')
                         ->pluck('column_name')
                         ->all();
+                    $translatableFields = $fields->where('is_translatable', true)
+                        ->pluck('column_name')
+                        ->all();
 
                     return view('filament-studio::version-history', [
                         'versions' => $versions,
                         'fieldLabels' => $fieldLabels,
                         'fieldTypes' => $fieldTypes,
                         'sensitiveFields' => $sensitiveFields,
+                        'translatableFields' => $translatableFields,
                         'showRestore' => true,
                     ]);
                 });

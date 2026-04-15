@@ -116,6 +116,26 @@ class CreateCollection extends CreateRecord
                         ->placeholder('{{name}} — {{status}}')
                         ->helperText('Handlebars template for relationship dropdowns.')
                         ->columnSpanFull(),
+                    Forms\Components\Toggle::make('multilingual_enabled')
+                        ->label('Enable Multilingual')
+                        ->helperText('Allow translatable fields to store values in multiple locales.')
+                        ->live()
+                        ->dehydrated(false)
+                        ->visible(fn () => config('filament-studio.locales.enabled', false)),
+                    Forms\Components\CheckboxList::make('supported_locales')
+                        ->options(fn () => collect(config('filament-studio.locales.available', ['en']))
+                            ->mapWithKeys(fn (string $locale) => [$locale => strtoupper($locale)])
+                            ->all())
+                        ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get): bool => (bool) $get('multilingual_enabled'))
+                        ->helperText('Select which locales this collection supports.')
+                        ->columns(4),
+                    Forms\Components\Select::make('default_locale')
+                        ->options(fn () => collect(config('filament-studio.locales.available', ['en']))
+                            ->mapWithKeys(fn (string $locale) => [$locale => strtoupper($locale)])
+                            ->all())
+                        ->placeholder('Use global default')
+                        ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get): bool => (bool) $get('multilingual_enabled'))
+                        ->helperText('The fallback locale when a translation is missing.'),
                 ])
                 ->columns(2),
         ];
@@ -127,7 +147,7 @@ class CreateCollection extends CreateRecord
             $data['slug'] = Str::slug($data['name']);
         }
 
-        unset($data['system_fields']);
+        unset($data['system_fields'], $data['multilingual_enabled']);
 
         return $data;
     }

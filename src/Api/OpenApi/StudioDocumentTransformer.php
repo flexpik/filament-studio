@@ -19,6 +19,7 @@ use Dedoc\Scramble\Support\Generator\Types\StringType;
 use Dedoc\Scramble\Support\Generator\Types\Type;
 use Flexpik\FilamentStudio\Models\StudioCollection;
 use Flexpik\FilamentStudio\Models\StudioField;
+use Flexpik\FilamentStudio\Services\LocaleResolver;
 use Illuminate\Support\Collection;
 
 class StudioDocumentTransformer
@@ -78,7 +79,7 @@ class StudioDocumentTransformer
         return Operation::make('get')
             ->setOperationId("list{$this->pascalCase($collection->slug)}")
             ->summary("List all {$collection->label_plural}")
-            ->description($collection->description ?? "Retrieve a paginated list of {$collection->label_plural}.")
+            ->description(($collection->description ?? "Retrieve a paginated list of {$collection->label_plural}.").$this->localeDescriptionSuffix($collection))
             ->setTags([$tag])
             ->addParameters([
                 (new Parameter('X-Api-Key', 'header'))
@@ -92,6 +93,7 @@ class StudioDocumentTransformer
                     ->description('Page number')
                     ->setSchema(Schema::fromType((new IntegerType)->default(1))),
             ])
+            ->addParameters($this->buildLocaleParameters($collection))
             ->addResponse(
                 Response::make(200)
                     ->setDescription("Paginated list of {$collection->label_plural}")
@@ -104,7 +106,7 @@ class StudioDocumentTransformer
         return Operation::make('get')
             ->setOperationId("show{$this->pascalCase($collection->slug)}")
             ->summary("Get a single {$collection->label}")
-            ->description("Retrieve a single {$collection->label} record by UUID.")
+            ->description("Retrieve a single {$collection->label} record by UUID.".$this->localeDescriptionSuffix($collection))
             ->setTags([$tag])
             ->addParameters([
                 (new Parameter('X-Api-Key', 'header'))
@@ -116,6 +118,7 @@ class StudioDocumentTransformer
                     ->required(true)
                     ->setSchema(Schema::fromType(new StringType)),
             ])
+            ->addParameters($this->buildLocaleParameters($collection, includeAllLocales: true))
             ->addResponse(
                 Response::make(200)
                     ->setDescription("{$collection->label} record")
@@ -131,7 +134,7 @@ class StudioDocumentTransformer
         $operation = Operation::make('post')
             ->setOperationId("create{$this->pascalCase($collection->slug)}")
             ->summary("Create a new {$collection->label}")
-            ->description("Create a new {$collection->label} record.")
+            ->description("Create a new {$collection->label} record.".$this->localeDescriptionSuffix($collection))
             ->setTags([$tag])
             ->addParameters([
                 (new Parameter('X-Api-Key', 'header'))
@@ -139,6 +142,7 @@ class StudioDocumentTransformer
                     ->required(true)
                     ->setSchema(Schema::fromType(new StringType)),
             ])
+            ->addParameters($this->buildLocaleParameters($collection))
             ->addResponse(
                 Response::make(201)
                     ->setDescription("{$collection->label} created")
@@ -166,7 +170,7 @@ class StudioDocumentTransformer
         $operation = Operation::make('put')
             ->setOperationId("update{$this->pascalCase($collection->slug)}")
             ->summary("Update a {$collection->label}")
-            ->description("Update an existing {$collection->label} record.")
+            ->description("Update an existing {$collection->label} record.".$this->localeDescriptionSuffix($collection))
             ->setTags([$tag])
             ->addParameters([
                 (new Parameter('X-Api-Key', 'header'))
@@ -178,6 +182,7 @@ class StudioDocumentTransformer
                     ->required(true)
                     ->setSchema(Schema::fromType(new StringType)),
             ])
+            ->addParameters($this->buildLocaleParameters($collection))
             ->addResponse(
                 Response::make(200)
                     ->setDescription("{$collection->label} updated")
@@ -281,6 +286,14 @@ class StudioDocumentTransformer
         $wrapper = new ObjectType;
         $wrapper->addProperty('data', $recordType);
 
+        if (config('filament-studio.locales.enabled', false)) {
+            $metaType = new ObjectType;
+            $metaType->addProperty('locale', (new StringType)->setDescription('The active locale used for this response'));
+            $metaType->addProperty('fallbacks', (new ArrayType)->setItems(new StringType)->setDescription('Field names that fell back to the default locale'));
+
+            $wrapper->addProperty('_meta', $metaType);
+        }
+
         return $wrapper;
     }
 
@@ -323,6 +336,55 @@ class StudioDocumentTransformer
             'json' => new ObjectType,
             default => new StringType,
         };
+    }
+
+    /**
+     * Build locale-related OpenAPI parameters for a collection.
+     *
+     * @return array<Parameter>
+     */
+    protected function buildLocaleParameters(StudioCollection $collection, bool $includeAllLocales = false): array
+    {
+        if (! config('filament-studio.locales.enabled', false)) {
+            return [];
+        }
+
+        $resolver = app(LocaleResolver::class);
+        $available = $resolver->availableLocales($collection);
+        $default = $resolver->defaultLocale($collection);
+
+        $localeEnum = new StringType;
+        $localeEnum->enum($available);
+        $localeEnum->default($default);
+
+        $params = [
+            (new Parameter('locale', 'query'))
+                ->description('Locale for translatable fields. Available: '.implode(', ', $available))
+                ->setSchema(Schema::fromType($localeEnum)),
+            (new Parameter('X-Locale', 'header'))
+                ->description('Locale for translatable fields (alternative to query param). Available: '.implode(', ', $available))
+                ->setSchema(Schema::fromType((clone $localeEnum))),
+        ];
+
+        if ($includeAllLocales) {
+            $params[] = (new Parameter('all_locales', 'query'))
+                ->description('When true, returns all locale variants for translatable fields as nested objects')
+                ->setSchema(Schema::fromType((new BooleanType)->default(false)));
+        }
+
+        return $params;
+    }
+
+    protected function localeDescriptionSuffix(StudioCollection $collection): string
+    {
+        if (! config('filament-studio.locales.enabled', false)) {
+            return '';
+        }
+
+        $resolver = app(LocaleResolver::class);
+        $available = $resolver->availableLocales($collection);
+
+        return "\n\nSupports multilingual content. Use `locale` query parameter or `X-Locale` header to select a locale. Available locales: ".implode(', ', $available).'.';
     }
 
     protected function pascalCase(string $slug): string

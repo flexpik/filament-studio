@@ -29,6 +29,7 @@ use Flexpik\FilamentStudio\Policies\StudioApiKeyPolicy;
 use Flexpik\FilamentStudio\Policies\StudioCollectionPolicy;
 use Flexpik\FilamentStudio\Policies\StudioDashboardPolicy;
 use Flexpik\FilamentStudio\Services\EavQueryBuilder;
+use Flexpik\FilamentStudio\Services\LocaleResolver;
 use Flexpik\FilamentStudio\Services\VariableResolver;
 use Flexpik\FilamentStudio\Support\PermissionRegistrar;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -59,6 +60,7 @@ class FilamentStudioServiceProvider extends PackageServiceProvider
                 'create_studio_dashboards_table',
                 'create_studio_panels_table',
                 'create_studio_api_keys_table',
+                'z_add_multilingual_columns',
             ])
             ->hasViews();
     }
@@ -70,6 +72,7 @@ class FilamentStudioServiceProvider extends PackageServiceProvider
         });
 
         $this->app->singleton(VariableResolver::class);
+        $this->app->singleton(LocaleResolver::class);
 
         $this->app->singleton(PanelTypeRegistry::class, function () {
             $registry = new PanelTypeRegistry;
@@ -138,6 +141,7 @@ class FilamentStudioServiceProvider extends PackageServiceProvider
     public function packageBooted(): void
     {
         \Livewire\Livewire::component('filter-builder', Livewire\FilterBuilder::class);
+        \Livewire\Livewire::component('studio-locale-switcher', Livewire\LocaleSwitcher::class);
 
         StudioRecord::observe(RecordVersioningObserver::class);
         StudioCollection::observe(StudioCollectionObserver::class);

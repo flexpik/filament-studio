@@ -73,17 +73,20 @@ it('returns 200 with updated resource schema on success', function () {
     $response->assertOk();
 
     $response->assertJsonStructure([
-        'uuid',
-        'data',
-        'created_by',
-        'updated_by',
-        'created_at',
-        'updated_at',
+        'data' => [
+            'uuid',
+            'data',
+            'created_by',
+            'updated_by',
+            'created_at',
+            'updated_at',
+        ],
+        '_meta' => ['locale'],
     ]);
 
-    expect($response->json('uuid'))->toBe($record->uuid);
-    expect($response->json('data.name'))->toBe('Updated Widget');
-    expect($response->json('data.quantity'))->toBe(20);
+    expect($response->json('data.uuid'))->toBe($record->uuid);
+    expect($response->json('data.data.name'))->toBe('Updated Widget');
+    expect($response->json('data.data.quantity'))->toBe(20);
 });
 
 it('performs partial update when sending only one field', function () {
@@ -102,11 +105,11 @@ it('performs partial update when sending only one field', function () {
     $response->assertOk();
 
     // Updated field should reflect the new value
-    expect($response->json('data.quantity'))->toBe(99);
+    expect($response->json('data.data.quantity'))->toBe(99);
 
     // Unchanged fields should retain their original values
-    expect($response->json('data.name'))->toBe('Partial Widget');
-    expect($response->json('data.description'))->toBe('Original description');
+    expect($response->json('data.data.name'))->toBe('Partial Widget');
+    expect($response->json('data.data.description'))->toBe('Original description');
 });
 
 it('creates a version snapshot when collection has versioning enabled', function () {

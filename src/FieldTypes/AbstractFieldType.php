@@ -96,11 +96,11 @@ abstract class AbstractFieldType
         }
 
         if (method_exists($component, 'placeholder') && $this->field->placeholder) {
-            $component->placeholder($this->field->placeholder);
+            $component->placeholder($this->field->getTranslatedAttribute('placeholder'));
         }
 
         if (method_exists($component, 'hint') && $this->field->hint) {
-            $component->hint($this->field->hint);
+            $component->hint($this->field->getTranslatedAttribute('hint'));
         }
 
         $isDisabled = match ($pageContext) {
@@ -114,7 +114,7 @@ abstract class AbstractFieldType
         }
 
         if (method_exists($component, 'label') && $this->field->label) {
-            $component->label($this->field->label);
+            $component->label($this->field->getTranslatedAttribute('label'));
         }
 
         $this->applyColumnSpan($component);
@@ -164,7 +164,7 @@ abstract class AbstractFieldType
     protected function applyCommonColumnProperties(Column $column): Column
     {
         if ($this->field->label) {
-            $column->label($this->field->label);
+            $column->label($this->field->getTranslatedAttribute('label'));
         }
 
         $column->sortable()->searchable();

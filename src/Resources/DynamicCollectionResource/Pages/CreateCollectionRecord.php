@@ -7,6 +7,7 @@ use Filament\Resources\Pages\CreateRecord;
 use Flexpik\FilamentStudio\Resources\DynamicCollectionResource;
 use Flexpik\FilamentStudio\Resources\DynamicCollectionResource\Concerns\ResolvesCollection;
 use Flexpik\FilamentStudio\Services\EavQueryBuilder;
+use Flexpik\FilamentStudio\Services\LocaleResolver;
 use Illuminate\Database\Eloquent\Model;
 
 class CreateCollectionRecord extends CreateRecord
@@ -37,10 +38,14 @@ class CreateCollectionRecord extends CreateRecord
     {
         $collection = $this->getResolvedCollection();
         $tenantId = Filament::getTenant()?->getKey();
+        $locale = app(LocaleResolver::class)->resolve($collection);
 
-        return EavQueryBuilder::for($collection)
+        $record = EavQueryBuilder::for($collection)
             ->tenant($tenantId)
+            ->locale($locale)
             ->create($data, auth()->id());
+
+        return $record;
     }
 
     protected function getRedirectUrl(): string

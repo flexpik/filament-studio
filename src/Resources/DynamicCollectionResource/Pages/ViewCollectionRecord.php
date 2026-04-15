@@ -13,6 +13,7 @@ use Flexpik\FilamentStudio\Resources\DynamicCollectionResource;
 use Flexpik\FilamentStudio\Resources\DynamicCollectionResource\Concerns\HasPanelWidgets;
 use Flexpik\FilamentStudio\Resources\DynamicCollectionResource\Concerns\ResolvesCollection;
 use Flexpik\FilamentStudio\Services\EavQueryBuilder;
+use Flexpik\FilamentStudio\Services\LocaleResolver;
 use Illuminate\Database\Eloquent\Model;
 
 class ViewCollectionRecord extends ViewRecord
@@ -59,8 +60,11 @@ class ViewCollectionRecord extends ViewRecord
         /** @var StudioRecord $record */
         $record = $this->getRecord();
 
+        $locale = app(LocaleResolver::class)->resolve($collection);
+
         $eavData = EavQueryBuilder::for($collection)
             ->tenant(Filament::getTenant()?->getKey())
+            ->locale($locale)
             ->getRecordData($record);
 
         return array_merge($data, $eavData);
@@ -68,11 +72,34 @@ class ViewCollectionRecord extends ViewRecord
 
     protected function getHeaderActions(): array
     {
-        $actions = [
-            Actions\EditAction::make(),
-        ];
-
         $collection = $this->getResolvedCollection();
+        $resolver = app(LocaleResolver::class);
+
+        $actions = [];
+
+        // Locale switcher actions
+        if ($resolver->isEnabled()
+            && ! empty($collection->supported_locales)
+            && $collection->fields()->where('is_translatable', true)->exists()
+        ) {
+            $activeLocale = $resolver->resolve($collection);
+
+            foreach ($resolver->availableLocales($collection) as $locale) {
+                $actions[] = Actions\Action::make("locale_{$locale}")
+                    ->label(strtoupper($locale))
+                    ->size('sm')
+                    ->color($activeLocale === $locale ? 'primary' : 'gray')
+                    ->action(function () use ($locale) {
+                        session(['studio_locale' => $locale]);
+                        $this->redirect(DynamicCollectionResource::getUrl('view', [
+                            'collection_slug' => $this->collectionSlug,
+                            'record' => $this->getRecord(),
+                        ]));
+                    });
+            }
+        }
+
+        $actions[] = Actions\EditAction::make();
 
         if ($collection->enable_versioning) {
             $actions[] = Actions\Action::make('versionHistory')
@@ -98,12 +125,16 @@ class ViewCollectionRecord extends ViewRecord
                     $sensitiveFields = $fields->where('field_type', 'password')
                         ->pluck('column_name')
                         ->all();
+                    $translatableFields = $fields->where('is_translatable', true)
+                        ->pluck('column_name')
+                        ->all();
 
                     return view('filament-studio::version-history', [
                         'versions' => $versions,
                         'fieldLabels' => $fieldLabels,
                         'fieldTypes' => $fieldTypes,
                         'sensitiveFields' => $sensitiveFields,
+                        'translatableFields' => $translatableFields,
                         'showRestore' => true,
                     ]);
                 });
