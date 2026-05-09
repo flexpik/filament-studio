@@ -8,6 +8,7 @@ use Flexpik\FilamentStudio\Models\StudioCollection;
 use Flexpik\FilamentStudio\Models\StudioDashboard;
 use Flexpik\FilamentStudio\Models\StudioField;
 use Flexpik\FilamentStudio\Models\StudioPanel;
+use Flexpik\FilamentStudio\Models\StudioRecord;
 use Flexpik\FilamentStudio\Models\StudioSavedFilter;
 
 it('serializes a collection with its fields', function () {
@@ -42,7 +43,7 @@ it('serializes a field without nested collection reference', function () {
     ])->not->toHaveKey('collection');
 });
 
-it('serializes a dashboard with panel count', function () {
+it('serializes a dashboard with panels null when relation not loaded', function () {
     $dashboard = StudioDashboard::factory()->create(['name' => 'Sales']);
 
     $out = (new McpSerializer)->dashboard($dashboard);
@@ -51,7 +52,16 @@ it('serializes a dashboard with panel count', function () {
         ->toHaveKey('id')
         ->toHaveKey('name', 'Sales')
         ->toHaveKey('slug')
-        ->toHaveKey('panels');
+        ->toHaveKey('panels', null);
+});
+
+it('serializes a dashboard with panels array when relation is loaded', function () {
+    $dashboard = StudioDashboard::factory()->create(['name' => 'Analytics']);
+    $dashboard->load('panels'); // loads empty collection
+
+    $out = (new McpSerializer)->dashboard($dashboard);
+
+    expect($out['panels'])->toBeArray();
 });
 
 it('serializes a panel including grid + config', function () {
@@ -101,5 +111,21 @@ it('serializes an api key with prefix only (never the secret)', function () {
         ->toHaveKey('name')
         ->toHaveKey('is_active')
         ->toHaveKey('permissions')
+        ->toHaveKey('updated_at')
         ->not->toHaveKey('key');
+});
+
+it('serializes a record with data and locale', function () {
+    $collection = StudioCollection::factory()->create();
+    $record = StudioRecord::factory()->create([
+        'collection_id' => $collection->id,
+    ]);
+
+    $out = (new McpSerializer)->record($record, ['field_a' => 'value'], 'en');
+
+    expect($out)
+        ->toHaveKey('uuid')
+        ->toHaveKey('data', ['field_a' => 'value'])
+        ->toHaveKey('locale', 'en')
+        ->not->toHaveKey('tenant_id');
 });

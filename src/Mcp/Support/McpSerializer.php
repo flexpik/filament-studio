@@ -206,6 +206,7 @@ class McpSerializer
             'last_used_at' => optional($k->last_used_at)->toIso8601String(),
             'expires_at' => optional($k->expires_at)->toIso8601String(),
             'created_at' => optional($k->created_at)->toIso8601String(),
+            'updated_at' => optional($k->updated_at)->toIso8601String(),
         ];
     }
 }
