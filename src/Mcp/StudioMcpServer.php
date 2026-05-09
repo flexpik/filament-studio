@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Flexpik\FilamentStudio\Mcp;
 
+use Flexpik\FilamentStudio\Mcp\Resources\FieldTypeCatalogResource;
+use Flexpik\FilamentStudio\Mcp\Resources\FieldTypeDetailResource;
+use Flexpik\FilamentStudio\Mcp\Resources\OperatorCatalogResource;
+use Flexpik\FilamentStudio\Mcp\Resources\PanelTypeCatalogResource;
+use Flexpik\FilamentStudio\Mcp\Resources\PanelTypeDetailResource;
+use Flexpik\FilamentStudio\Mcp\Resources\ServerInfoResource;
 use Flexpik\FilamentStudio\Mcp\Support\ResolveStudioApiKeyFromEnv;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
@@ -31,7 +37,14 @@ class StudioMcpServer extends Server
     /**
      * @var array<int, class-string<Server\Resource>>
      */
-    protected array $resources = [];
+    protected array $resources = [
+        ServerInfoResource::class,
+        FieldTypeCatalogResource::class,
+        FieldTypeDetailResource::class,
+        PanelTypeCatalogResource::class,
+        PanelTypeDetailResource::class,
+        OperatorCatalogResource::class,
+    ];
 
     /**
      * @var array<int, class-string<Prompt>>
