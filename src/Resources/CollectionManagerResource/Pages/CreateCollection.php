@@ -5,6 +5,7 @@ namespace Flexpik\FilamentStudio\Resources\CollectionManagerResource\Pages;
 use Filament\Forms;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\Wizard;
 use Flexpik\FilamentStudio\FilamentStudioPlugin;
@@ -126,7 +127,7 @@ class CreateCollection extends CreateRecord
                         ->options(fn () => collect(config('filament-studio.locales.available', ['en']))
                             ->mapWithKeys(fn (string $locale) => [$locale => strtoupper($locale)])
                             ->all())
-                        ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get): bool => (bool) $get('multilingual_enabled'))
+                        ->visible(fn (Get $get): bool => (bool) $get('multilingual_enabled'))
                         ->helperText('Select which locales this collection supports.')
                         ->columns(4),
                     Forms\Components\Select::make('default_locale')
@@ -134,7 +135,7 @@ class CreateCollection extends CreateRecord
                             ->mapWithKeys(fn (string $locale) => [$locale => strtoupper($locale)])
                             ->all())
                         ->placeholder('Use global default')
-                        ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get): bool => (bool) $get('multilingual_enabled'))
+                        ->visible(fn (Get $get): bool => (bool) $get('multilingual_enabled'))
                         ->helperText('The fallback locale when a translation is missing.'),
                 ])
                 ->columns(2),

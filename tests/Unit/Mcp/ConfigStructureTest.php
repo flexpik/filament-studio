@@ -13,6 +13,7 @@ it('exposes mcp config keys with correct defaults', function () {
     expect(config('filament-studio.mcp.limits.query_max_per_page'))->toBe(100);
     expect(config('filament-studio.mcp.limits.query_max_filter_depth'))->toBe(5);
     expect(config('filament-studio.mcp.limits.create_collection_max_fields'))->toBe(50);
+    expect(config('filament-studio.mcp.logging.channel'))->toBe('stack');
     expect(config('filament-studio.mcp.logging.log_requests'))->toBeTrue();
     expect(config('filament-studio.mcp.logging.log_errors'))->toBeTrue();
 });

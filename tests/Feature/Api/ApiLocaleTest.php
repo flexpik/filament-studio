@@ -112,7 +112,7 @@ it('returns all locales when all_locales=true', function () {
 
 it('stores data in specified locale', function () {
     $response = $this->postJson(
-        "/api/studio/products?locale=fr",
+        '/api/studio/products?locale=fr',
         ['data' => ['title' => 'Nouveau Produit', 'price' => 19.99]],
         $this->headers
     );
@@ -137,7 +137,7 @@ it('includes _meta.locale in show response', function () {
 
 it('includes _meta.locale in store response', function () {
     $response = $this->postJson(
-        "/api/studio/products",
+        '/api/studio/products',
         ['data' => ['title' => 'New Product', 'price' => 9.99]],
         $this->headers
     );

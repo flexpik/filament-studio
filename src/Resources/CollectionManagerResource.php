@@ -11,6 +11,7 @@ use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -144,7 +145,7 @@ class CollectionManagerResource extends Resource
                                     ->options(fn () => collect(config('filament-studio.locales.available', ['en']))
                                         ->mapWithKeys(fn (string $locale) => [$locale => strtoupper($locale)])
                                         ->all())
-                                    ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get): bool => (bool) $get('multilingual_enabled'))
+                                    ->visible(fn (Get $get): bool => (bool) $get('multilingual_enabled'))
                                     ->helperText('Select which locales this collection supports. Leave empty to use all available locales.')
                                     ->columns(4),
                                 Forms\Components\Select::make('default_locale')
@@ -152,7 +153,7 @@ class CollectionManagerResource extends Resource
                                         ->mapWithKeys(fn (string $locale) => [$locale => strtoupper($locale)])
                                         ->all())
                                     ->placeholder('Use global default')
-                                    ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get): bool => (bool) $get('multilingual_enabled'))
+                                    ->visible(fn (Get $get): bool => (bool) $get('multilingual_enabled'))
                                     ->helperText('The fallback locale when a translation is missing.'),
                             ])
                             ->collapsible()

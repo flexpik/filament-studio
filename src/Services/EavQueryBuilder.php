@@ -17,7 +17,6 @@ use Flexpik\FilamentStudio\Models\StudioRecord;
 use Flexpik\FilamentStudio\Models\StudioRecordVersion;
 use Flexpik\FilamentStudio\Models\StudioValue;
 use Flexpik\FilamentStudio\Observers\RecordVersioningObserver;
-use Flexpik\FilamentStudio\Services\LocaleResolver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;

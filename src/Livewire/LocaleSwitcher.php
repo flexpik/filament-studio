@@ -4,6 +4,7 @@ namespace Flexpik\FilamentStudio\Livewire;
 
 use Flexpik\FilamentStudio\Models\StudioCollection;
 use Flexpik\FilamentStudio\Services\LocaleResolver;
+use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 class LocaleSwitcher extends Component
@@ -56,7 +57,7 @@ class LocaleSwitcher extends Component
         }
     }
 
-    public function render(): \Illuminate\Contracts\View\View
+    public function render(): View
     {
         return view('filament-studio::livewire.locale-switcher');
     }

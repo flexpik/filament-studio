@@ -13,6 +13,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Flexpik\FilamentStudio\Enums\EavCast;
 use Flexpik\FilamentStudio\FieldTypes\AbstractFieldType;
 use Flexpik\FilamentStudio\Models\StudioCollection;
+use Flexpik\FilamentStudio\Services\LocaleResolver;
 
 class BelongsToManyFieldType extends AbstractFieldType
 {
@@ -68,7 +69,7 @@ class BelongsToManyFieldType extends AbstractFieldType
 
             $valCol = $field->eav_cast->column();
 
-            $locale = app(\Flexpik\FilamentStudio\Services\LocaleResolver::class)
+            $locale = app(LocaleResolver::class)
                 ->defaultLocale($collection);
 
             return $collection->records()

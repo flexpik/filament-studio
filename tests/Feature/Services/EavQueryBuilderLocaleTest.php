@@ -2,7 +2,6 @@
 
 use Flexpik\FilamentStudio\Models\StudioCollection;
 use Flexpik\FilamentStudio\Models\StudioField;
-use Flexpik\FilamentStudio\Models\StudioRecord;
 use Flexpik\FilamentStudio\Models\StudioValue;
 use Flexpik\FilamentStudio\Services\EavQueryBuilder;
 
