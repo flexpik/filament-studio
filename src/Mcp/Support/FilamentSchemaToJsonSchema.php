@@ -107,9 +107,14 @@ class FilamentSchemaToJsonSchema
     {
         $entry = ['type' => 'string'];
 
-        $options = $component->getOptions();
-        if (is_array($options) && $options !== []) {
-            $entry['enum'] = array_keys($options);
+        try {
+            $options = $component->getOptions();
+            if (is_array($options) && $options !== []) {
+                $entry['enum'] = array_keys($options);
+            }
+        } catch (\Throwable) {
+            // Options are dynamic (closure-based) and require a Filament container.
+            // Omit enum; the AI should consult runtime discovery tools instead.
         }
 
         return $entry;
