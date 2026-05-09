@@ -167,6 +167,13 @@ class FilamentStudioServiceProvider extends PackageServiceProvider
             return Limit::perMinute($limit)->by($key);
         });
 
+        RateLimiter::for('studio-mcp', function ($request) {
+            $limit = config('filament-studio.mcp.http.rate_limit', 120);
+            $key = $request->header('X-Api-Key', $request->ip());
+
+            return Limit::perMinute($limit)->by($key);
+        });
+
         $this->app->booted(function () {
             // Check both config and plugin instance — the plugin sets config
             // during Filament panel boot, which may run after app booted callbacks.
