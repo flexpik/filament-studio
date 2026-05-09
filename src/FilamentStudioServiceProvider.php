@@ -9,7 +9,10 @@ use Flexpik\FilamentStudio\Api\OpenApi\StudioOperationTransformer;
 use Flexpik\FilamentStudio\Api\StudioApiRouteRegistrar;
 use Flexpik\FilamentStudio\FieldTypes\FieldTypeRegistry;
 use Flexpik\FilamentStudio\FieldTypes\Types;
+use Flexpik\FilamentStudio\Mcp\StudioMcpServer;
+use Flexpik\FilamentStudio\Mcp\Support\ResolveStudioApiKeyFromEnv;
 use Flexpik\FilamentStudio\Mcp\Support\StudioApiKeyContext;
+use Laravel\Mcp\Facades\Mcp;
 use Flexpik\FilamentStudio\Models\StudioApiKey;
 use Flexpik\FilamentStudio\Models\StudioCollection;
 use Flexpik\FilamentStudio\Models\StudioDashboard;
@@ -195,6 +198,21 @@ class FilamentStudioServiceProvider extends PackageServiceProvider
                             new StudioOperationTransformer,
                         ]);
                 }
+            }
+        });
+
+        $this->app->booted(function () {
+            if (! config('filament-studio.mcp.enabled', false)) {
+                return;
+            }
+
+            if (config('filament-studio.mcp.http.enabled', true)) {
+                require __DIR__.'/Mcp/Routes.php';
+            }
+
+            if (config('filament-studio.mcp.stdio.enabled', true)) {
+                $handle = config('filament-studio.mcp.stdio.handle', 'studio');
+                Mcp::local($handle, StudioMcpServer::class);
             }
         });
     }

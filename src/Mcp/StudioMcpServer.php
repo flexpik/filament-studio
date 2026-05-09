@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flexpik\FilamentStudio\Mcp;
 
+use Flexpik\FilamentStudio\Mcp\Support\ResolveStudioApiKeyFromEnv;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -36,4 +37,19 @@ class StudioMcpServer extends Server
      * @var array<int, class-string<Prompt>>
      */
     protected array $prompts = [];
+
+    public function boot(): void
+    {
+        parent::boot();
+
+        if ($this->runningOverStdio()) {
+            app(ResolveStudioApiKeyFromEnv::class)->resolve();
+        }
+    }
+
+    protected function runningOverStdio(): bool
+    {
+        return app()->runningInConsole()
+            && in_array('mcp:start', $_SERVER['argv'] ?? [], true);
+    }
 }
