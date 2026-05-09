@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 use Flexpik\FilamentStudio\Mcp\StudioMcpServer;
 use Laravel\Mcp\Server;
-use Laravel\Mcp\Server\Attributes\Instructions;
-use Laravel\Mcp\Server\Attributes\Name;
-use Laravel\Mcp\Server\Attributes\Version;
 use Laravel\Mcp\Server\Contracts\Transport;
 
 it('extends the Laravel MCP Server base class', function () {
@@ -25,12 +22,21 @@ it('declares empty tools, resources, and prompts arrays initially', function () 
     }
 });
 
-it('declares server identity attributes', function () {
-    $reflection = new ReflectionClass(StudioMcpServer::class);
+it('declares server identity via properties', function () {
+    $transport = Mockery::mock(Transport::class);
+    $server = new StudioMcpServer($transport);
+    $reflection = new ReflectionClass($server);
 
-    $names = collect($reflection->getAttributes())->pluck('name');
+    $name = $reflection->getProperty('name');
+    $name->setAccessible(true);
 
-    expect($names)->toContain(Name::class);
-    expect($names)->toContain(Version::class);
-    expect($names)->toContain(Instructions::class);
+    $version = $reflection->getProperty('version');
+    $version->setAccessible(true);
+
+    $instructions = $reflection->getProperty('instructions');
+    $instructions->setAccessible(true);
+
+    expect($name->getValue($server))->toBe('Filament Studio');
+    expect($version->getValue($server))->toBe('0.1.0');
+    expect($instructions->getValue($server))->toContain('dynamic data model manager');
 });

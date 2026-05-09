@@ -12,23 +12,21 @@ use Flexpik\FilamentStudio\Mcp\Resources\PanelTypeDetailResource;
 use Flexpik\FilamentStudio\Mcp\Resources\ServerInfoResource;
 use Flexpik\FilamentStudio\Mcp\Support\ResolveStudioApiKeyFromEnv;
 use Laravel\Mcp\Server;
-use Laravel\Mcp\Server\Attributes\Instructions;
-use Laravel\Mcp\Server\Attributes\Name;
-use Laravel\Mcp\Server\Attributes\Version;
 use Laravel\Mcp\Server\Prompt;
 use Laravel\Mcp\Server\Tool;
 
-#[Name('Filament Studio')]
-#[Version('0.1.0')]
-#[Instructions(
-    'Filament Studio is a dynamic data model manager built on Filament v5 with EAV storage. '.
-    'Through this MCP server you can manage collections (data models), fields (columns), records (rows), '.
-    'dashboards and panels (read views), saved filters, and API keys. '.
-    'Read the studio://info, studio://field-types, studio://panel-types, and studio://operators resources first '.
-    'to discover the catalog of capabilities before using tools.'
-)]
 class StudioMcpServer extends Server
 {
+    protected string $name = 'Filament Studio';
+
+    protected string $version = '0.1.0';
+
+    protected string $instructions = 'Filament Studio is a dynamic data model manager built on Filament v5 with EAV storage. '.
+        'Through this MCP server you can manage collections (data models), fields (columns), records (rows), '.
+        'dashboards and panels (read views), saved filters, and API keys. '.
+        'Read the studio://info, studio://field-types, studio://panel-types, and studio://operators resources first '.
+        'to discover the catalog of capabilities before using tools.';
+
     /**
      * @var array<int, class-string<Tool>>
      */
