@@ -4,6 +4,7 @@ namespace Flexpik\FilamentStudio\Models;
 
 use Flexpik\FilamentStudio\Database\Factories\StudioApiKeyFactory;
 use Flexpik\FilamentStudio\Enums\ApiAction;
+use Flexpik\FilamentStudio\Mcp\Support\StudioScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -63,6 +64,23 @@ class StudioApiKey extends Model
         }
 
         return false;
+    }
+
+    public function canManage(StudioScope $scope): bool
+    {
+        if (! $this->is_active) {
+            return false;
+        }
+
+        if ($this->expires_at && $this->expires_at->isPast()) {
+            return false;
+        }
+
+        $permissions = $this->permissions ?? [];
+
+        $studioScopes = $permissions['_studio'] ?? [];
+
+        return in_array($scope->name(), $studioScopes, true);
     }
 
     public static function findByKey(string $plainKey): ?self
