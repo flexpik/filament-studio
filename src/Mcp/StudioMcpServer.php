@@ -23,6 +23,7 @@ use Flexpik\FilamentStudio\Mcp\Tools\Fields\DeleteFieldTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Fields\PreviewDeleteFieldTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Fields\ReorderFieldsTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Fields\UpdateFieldTool;
+use Flexpik\FilamentStudio\Mcp\Tools\Records\GetRecordTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Records\QueryRecordsTool;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Prompt;
@@ -57,6 +58,7 @@ class StudioMcpServer extends Server
         ReorderFieldsTool::class,
         SetFieldOptionsTool::class,
         QueryRecordsTool::class,
+        GetRecordTool::class,
     ];
 
     /**
