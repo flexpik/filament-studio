@@ -24,6 +24,7 @@ use Flexpik\FilamentStudio\Mcp\Tools\Fields\PreviewDeleteFieldTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Fields\ReorderFieldsTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Fields\UpdateFieldTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Records\CreateRecordTool;
+use Flexpik\FilamentStudio\Mcp\Tools\Records\DeleteRecordTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Records\GetRecordTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Records\QueryRecordsTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Records\UpdateRecordTool;
@@ -63,6 +64,7 @@ class StudioMcpServer extends Server
         GetRecordTool::class,
         CreateRecordTool::class,
         UpdateRecordTool::class,
+        DeleteRecordTool::class,
     ];
 
     /**
