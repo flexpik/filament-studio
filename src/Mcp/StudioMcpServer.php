@@ -17,6 +17,12 @@ use Flexpik\FilamentStudio\Mcp\Tools\Collections\GetCollectionTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Collections\ListCollectionsTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Collections\PreviewDeleteCollectionTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Collections\UpdateCollectionTool;
+use Flexpik\FilamentStudio\Mcp\Tools\FieldOptions\SetFieldOptionsTool;
+use Flexpik\FilamentStudio\Mcp\Tools\Fields\CreateFieldTool;
+use Flexpik\FilamentStudio\Mcp\Tools\Fields\DeleteFieldTool;
+use Flexpik\FilamentStudio\Mcp\Tools\Fields\PreviewDeleteFieldTool;
+use Flexpik\FilamentStudio\Mcp\Tools\Fields\ReorderFieldsTool;
+use Flexpik\FilamentStudio\Mcp\Tools\Fields\UpdateFieldTool;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Prompt;
 use Laravel\Mcp\Server\Tool;
@@ -43,6 +49,12 @@ class StudioMcpServer extends Server
         UpdateCollectionTool::class,
         PreviewDeleteCollectionTool::class,
         DeleteCollectionTool::class,
+        CreateFieldTool::class,
+        UpdateFieldTool::class,
+        PreviewDeleteFieldTool::class,
+        DeleteFieldTool::class,
+        ReorderFieldsTool::class,
+        SetFieldOptionsTool::class,
     ];
 
     /**
