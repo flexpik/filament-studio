@@ -11,6 +11,12 @@ use Flexpik\FilamentStudio\Mcp\Resources\PanelTypeCatalogResource;
 use Flexpik\FilamentStudio\Mcp\Resources\PanelTypeDetailResource;
 use Flexpik\FilamentStudio\Mcp\Resources\ServerInfoResource;
 use Flexpik\FilamentStudio\Mcp\Support\ResolveStudioApiKeyFromEnv;
+use Flexpik\FilamentStudio\Mcp\Tools\Collections\CreateCollectionTool;
+use Flexpik\FilamentStudio\Mcp\Tools\Collections\DeleteCollectionTool;
+use Flexpik\FilamentStudio\Mcp\Tools\Collections\GetCollectionTool;
+use Flexpik\FilamentStudio\Mcp\Tools\Collections\ListCollectionsTool;
+use Flexpik\FilamentStudio\Mcp\Tools\Collections\PreviewDeleteCollectionTool;
+use Flexpik\FilamentStudio\Mcp\Tools\Collections\UpdateCollectionTool;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Prompt;
 use Laravel\Mcp\Server\Tool;
@@ -30,7 +36,14 @@ class StudioMcpServer extends Server
     /**
      * @var array<int, class-string<Tool>>
      */
-    protected array $tools = [];
+    protected array $tools = [
+        ListCollectionsTool::class,
+        GetCollectionTool::class,
+        CreateCollectionTool::class,
+        UpdateCollectionTool::class,
+        PreviewDeleteCollectionTool::class,
+        DeleteCollectionTool::class,
+    ];
 
     /**
      * @var array<int, class-string<Server\Resource>>
