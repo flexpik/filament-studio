@@ -14,9 +14,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Six capability-discovery Resources: `studio://info`, `studio://field-types`, `studio://field-types/{key}`, `studio://panel-types`, `studio://panel-types/{key}`, `studio://operators`.
 - "MCP Management Scopes" section on the API Key edit form (visible only when `mcp.enabled`).
 - New `studio-mcp` rate limiter (per X-Api-Key, configurable via `mcp.http.rate_limit`).
+- 12 schema-management MCP tools: `studio_list_collections`, `studio_get_collection`, `studio_create_collection`, `studio_update_collection`, `studio_preview_delete_collection`, `studio_delete_collection`, `studio_create_field`, `studio_update_field`, `studio_preview_delete_field`, `studio_delete_field`, `studio_reorder_fields`, `studio_set_field_options`.
+- Cache-backed per-tenant confirm-token flow for destructive collection/field deletes (5-minute TTL, one-time use, configurable via `mcp.confirm_token_ttl`).
+- Action layer (`Mcp/Actions/`) for collection/field/field-option mutations — framework-agnostic, reusable.
+- `StudioMcpExceptionHandler` mapping domain exceptions to JSON-RPC error codes per §6 of the design spec.
+- `McpSerializer` for canonical entity shapes shared across all schema-management tools.
+- Domain exception classes: `ConfirmTokenInvalidException`, `EavCastConflictException`, `IntegrityException`, `StudioNotFoundException` — each with `mcpCode()` and `mcpData()` for uniform handler calls.
+- `mcpCallTool($apiKey, $toolClass, $input)` Pest helper for MCP tool tests.
+- End-to-end HTTP integration test (`SchemaDesignFlowTest`) covering create→field→preview→delete flow.
+- Cross-tenant confirm-token isolation test.
 
 ### Notes
-- No tools are registered yet; tools come in P2 (schema management), P3 (records), P4 (dashboards/panels), P5 (saved filters / API keys / polish).
+- No tools are registered yet beyond schema management; tools come in P3 (records), P4 (dashboards/panels), P5 (saved filters / API keys / polish).
 
 ## [1.2.0] - 2026-04-15
 
