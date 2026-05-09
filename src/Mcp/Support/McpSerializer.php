@@ -5,9 +5,15 @@ declare(strict_types=1);
 namespace Flexpik\FilamentStudio\Mcp\Support;
 
 use Flexpik\FilamentStudio\Enums\EavCast;
+use Flexpik\FilamentStudio\Enums\PanelPlacement;
+use Flexpik\FilamentStudio\Models\StudioApiKey;
 use Flexpik\FilamentStudio\Models\StudioCollection;
+use Flexpik\FilamentStudio\Models\StudioDashboard;
 use Flexpik\FilamentStudio\Models\StudioField;
 use Flexpik\FilamentStudio\Models\StudioFieldOption;
+use Flexpik\FilamentStudio\Models\StudioPanel;
+use Flexpik\FilamentStudio\Models\StudioRecord;
+use Flexpik\FilamentStudio\Models\StudioSavedFilter;
 
 class McpSerializer
 {
@@ -97,6 +103,109 @@ class McpSerializer
             'color' => $o->color,
             'icon' => $o->icon,
             'sort_order' => $o->sort_order,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function record(StudioRecord $record, array $data, ?string $locale = null): array
+    {
+        return [
+            'uuid' => $record->uuid,
+            'data' => $data,
+            'locale' => $locale,
+            'created_by' => $record->created_by,
+            'updated_by' => $record->updated_by,
+            'created_at' => optional($record->created_at)->toIso8601String(),
+            'updated_at' => optional($record->updated_at)->toIso8601String(),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function dashboard(StudioDashboard $d): array
+    {
+        return [
+            'id' => $d->id,
+            'slug' => $d->slug,
+            'name' => $d->name,
+            'icon' => $d->icon,
+            'color' => $d->color,
+            'auto_refresh_interval' => $d->auto_refresh_interval,
+            'sort_order' => $d->sort_order,
+            'panels' => $d->relationLoaded('panels')
+                ? $d->panels->map(fn ($p) => $this->panel($p))->all()
+                : null,
+            'created_at' => optional($d->created_at)->toIso8601String(),
+            'updated_at' => optional($d->updated_at)->toIso8601String(),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function panel(StudioPanel $p): array
+    {
+        return [
+            'id' => $p->id,
+            'dashboard_id' => $p->dashboard_id,
+            'panel_type' => $p->panel_type,
+            'placement' => $p->placement instanceof PanelPlacement
+                ? $p->placement->value
+                : $p->placement,
+            'context_collection_id' => $p->context_collection_id,
+            'header' => [
+                'visible' => (bool) $p->header_visible,
+                'label' => $p->header_label,
+                'icon' => $p->header_icon,
+                'color' => $p->header_color,
+                'note' => $p->header_note,
+            ],
+            'grid' => [
+                'col_span' => $p->grid_col_span,
+                'row_span' => $p->grid_row_span,
+                'order' => $p->grid_order,
+            ],
+            'sort_order' => $p->sort_order,
+            'config' => $p->config ?? [],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function savedFilter(StudioSavedFilter $f): array
+    {
+        return [
+            'id' => $f->id,
+            'collection_id' => $f->collection_id,
+            'name' => $f->name,
+            'is_shared' => (bool) $f->is_shared,
+            'filter' => $f->filter_tree,
+            'created_by' => $f->created_by,
+            'created_at' => optional($f->created_at)->toIso8601String(),
+            'updated_at' => optional($f->updated_at)->toIso8601String(),
+        ];
+    }
+
+    /**
+     * Serialize a StudioApiKey for AI consumption. NEVER includes the raw secret —
+     * only the database-stored hash is exposed (and only for ownership checks).
+     *
+     * @return array<string, mixed>
+     */
+    public function apiKey(StudioApiKey $k): array
+    {
+        return [
+            'id' => $k->id,
+            'name' => $k->name,
+            'is_active' => (bool) $k->is_active,
+            'permissions' => $k->permissions ?? [],
+            'last_used_at' => optional($k->last_used_at)->toIso8601String(),
+            'expires_at' => optional($k->expires_at)->toIso8601String(),
+            'created_at' => optional($k->created_at)->toIso8601String(),
         ];
     }
 }
