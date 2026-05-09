@@ -15,6 +15,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Flexpik\FilamentStudio\Enums\ApiAction;
+use Flexpik\FilamentStudio\Mcp\Support\StudioScope;
 use Flexpik\FilamentStudio\Models\StudioApiKey;
 use Flexpik\FilamentStudio\Models\StudioCollection;
 use Flexpik\FilamentStudio\Resources\ApiSettingsResource\Pages;
@@ -87,6 +88,30 @@ class ApiSettingsResource extends Resource
                             ->itemLabel(fn (array $state) => $state['collection_slug'] ?? 'New Permission')
                             ->columnSpanFull(),
                     ]),
+
+                Section::make('MCP Management Scopes')
+                    ->description('Scopes that grant this key access to the AI-agent MCP server. Has no effect on the REST API.')
+                    ->schema([
+                        Forms\Components\CheckboxList::make('mcp_scopes')
+                            ->label('Scopes')
+                            ->options(StudioScope::asSelectOptions())
+                            ->descriptions([
+                                StudioScope::ManageApiKeys->value => 'PRIVILEGED: lets this key mint new API keys.',
+                            ])
+                            ->columns(1)
+                            ->afterStateHydrated(function (Forms\Components\CheckboxList $component, ?array $state, $record) {
+                                if ($record && is_array($record->permissions ?? null)) {
+                                    $studio = $record->permissions['_studio'] ?? [];
+                                    $component->state(array_map(
+                                        fn (string $name) => '_studio.'.$name,
+                                        $studio,
+                                    ));
+                                }
+                            })
+                            ->dehydrated(false)
+                            ->live(),
+                    ])
+                    ->visible(fn () => config('filament-studio.mcp.enabled', false)),
             ]);
     }
 
