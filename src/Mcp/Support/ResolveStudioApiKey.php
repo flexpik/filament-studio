@@ -22,7 +22,7 @@ class ResolveStudioApiKey
             return $this->unauthenticated('API key is missing. Send an X-Api-Key header.');
         }
 
-        $key = StudioApiKey::query()->where('key', $headerValue)->first();
+        $key = StudioApiKey::query()->where('key', hash('sha256', $headerValue))->first();
 
         if (! $key) {
             return $this->unauthenticated('API key is invalid.');

@@ -33,8 +33,9 @@ it('rejects HTTP MCP request without an API key', function () {
 });
 
 it('returns resources via resources/list with a valid API key', function () {
+    $plain = 'sk_smoke';
     StudioApiKey::factory()->create([
-        'key' => 'sk_smoke',
+        'key' => hash('sha256', $plain),
         'is_active' => true,
         'permissions' => ['_studio' => ['read_schema']],
     ]);
@@ -43,7 +44,7 @@ it('returns resources via resources/list with a valid API key', function () {
         'jsonrpc' => '2.0',
         'id' => 1,
         'method' => 'resources/list',
-    ], ['X-Api-Key' => 'sk_smoke']);
+    ], ['X-Api-Key' => $plain]);
 
     $response->assertStatus(200);
 
@@ -63,8 +64,9 @@ it('returns resources via resources/list with a valid API key', function () {
 });
 
 it('reads studio://info via resources/read with a valid API key', function () {
+    $plain = 'sk_read';
     StudioApiKey::factory()->create([
-        'key' => 'sk_read',
+        'key' => hash('sha256', $plain),
         'is_active' => true,
         'tenant_id' => 99,
         'permissions' => ['_studio' => ['read_schema']],
@@ -75,7 +77,7 @@ it('reads studio://info via resources/read with a valid API key', function () {
         'id' => 2,
         'method' => 'resources/read',
         'params' => ['uri' => 'studio://info'],
-    ], ['X-Api-Key' => 'sk_read']);
+    ], ['X-Api-Key' => $plain]);
 
     $response->assertStatus(200);
 

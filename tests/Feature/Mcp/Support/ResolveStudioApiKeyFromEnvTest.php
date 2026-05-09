@@ -7,9 +7,10 @@ use Flexpik\FilamentStudio\Mcp\Support\StudioApiKeyContext;
 use Flexpik\FilamentStudio\Models\StudioApiKey;
 
 it('resolves a key from STUDIO_API_KEY env and binds it to the context', function () {
-    $key = StudioApiKey::factory()->create(['key' => 'sk_env_test', 'is_active' => true]);
+    $plain = 'sk_env_test';
+    $key = StudioApiKey::factory()->create(['key' => hash('sha256', $plain), 'is_active' => true]);
 
-    putenv('STUDIO_API_KEY=sk_env_test');
+    putenv('STUDIO_API_KEY='.$plain);
 
     app(ResolveStudioApiKeyFromEnv::class)->resolve();
 
@@ -35,9 +36,10 @@ it('throws when STUDIO_API_KEY does not match any key', function () {
 });
 
 it('throws when the resolved key is inactive', function () {
-    StudioApiKey::factory()->create(['key' => 'sk_inactive_env', 'is_active' => false]);
+    $plain = 'sk_inactive_env';
+    StudioApiKey::factory()->create(['key' => hash('sha256', $plain), 'is_active' => false]);
 
-    putenv('STUDIO_API_KEY=sk_inactive_env');
+    putenv('STUDIO_API_KEY='.$plain);
 
     expect(fn () => app(ResolveStudioApiKeyFromEnv::class)->resolve())
         ->toThrow(RuntimeException::class, 'inactive');

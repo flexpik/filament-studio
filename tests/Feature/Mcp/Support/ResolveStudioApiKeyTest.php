@@ -31,11 +31,12 @@ it('rejects requests with an unknown X-Api-Key', function () {
 });
 
 it('rejects an inactive API key', function () {
-    StudioApiKey::factory()->create(['key' => 'sk_inactive', 'is_active' => false]);
+    $plain = 'sk_inactive';
+    StudioApiKey::factory()->create(['key' => hash('sha256', $plain), 'is_active' => false]);
 
     $middleware = app(ResolveStudioApiKey::class);
     $request = Request::create('/ai/studio', 'POST');
-    $request->headers->set('X-Api-Key', 'sk_inactive');
+    $request->headers->set('X-Api-Key', $plain);
 
     $response = $middleware->handle($request, fn () => new Response('ok'));
 
@@ -43,15 +44,16 @@ it('rejects an inactive API key', function () {
 });
 
 it('rejects an expired API key', function () {
+    $plain = 'sk_expired';
     StudioApiKey::factory()->create([
-        'key' => 'sk_expired',
+        'key' => hash('sha256', $plain),
         'is_active' => true,
         'expires_at' => now()->subDay(),
     ]);
 
     $middleware = app(ResolveStudioApiKey::class);
     $request = Request::create('/ai/studio', 'POST');
-    $request->headers->set('X-Api-Key', 'sk_expired');
+    $request->headers->set('X-Api-Key', $plain);
 
     $response = $middleware->handle($request, fn () => new Response('ok'));
 
@@ -59,15 +61,16 @@ it('rejects an expired API key', function () {
 });
 
 it('binds a valid key to the StudioApiKeyContext and updates last_used_at', function () {
+    $plain = 'sk_valid';
     $key = StudioApiKey::factory()->create([
-        'key' => 'sk_valid',
+        'key' => hash('sha256', $plain),
         'is_active' => true,
         'last_used_at' => null,
     ]);
 
     $middleware = app(ResolveStudioApiKey::class);
     $request = Request::create('/ai/studio', 'POST');
-    $request->headers->set('X-Api-Key', 'sk_valid');
+    $request->headers->set('X-Api-Key', $plain);
 
     $middleware->handle($request, fn () => new Response('ok'));
 

@@ -19,7 +19,7 @@ class ResolveStudioApiKeyFromEnv
             throw new RuntimeException('STUDIO_API_KEY environment variable is not set.');
         }
 
-        $key = StudioApiKey::query()->where('key', $value)->first();
+        $key = StudioApiKey::query()->where('key', hash('sha256', $value))->first();
 
         if (! $key) {
             throw new RuntimeException('STUDIO_API_KEY is invalid.');
