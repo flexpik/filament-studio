@@ -26,6 +26,7 @@ use Flexpik\FilamentStudio\Mcp\Tools\Fields\UpdateFieldTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Records\CreateRecordTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Records\GetRecordTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Records\QueryRecordsTool;
+use Flexpik\FilamentStudio\Mcp\Tools\Records\UpdateRecordTool;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Prompt;
 use Laravel\Mcp\Server\Tool;
@@ -61,6 +62,7 @@ class StudioMcpServer extends Server
         QueryRecordsTool::class,
         GetRecordTool::class,
         CreateRecordTool::class,
+        UpdateRecordTool::class,
     ];
 
     /**
