@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- MCP server foundation (`src/Mcp/`) — opt-in via `mcp.enabled` config flag.
+- Both HTTP/SSE (mounted at `/ai/studio`) and stdio (`php artisan mcp:start studio`) transports.
+- Reuse of `StudioApiKey` for MCP auth with a new `_studio.*` management-scope namespace (`manage_collections`, `manage_dashboards`, `manage_filters`, `manage_api_keys`, `read_schema`).
+- Six capability-discovery Resources: `studio://info`, `studio://field-types`, `studio://field-types/{key}`, `studio://panel-types`, `studio://panel-types/{key}`, `studio://operators`.
+- "MCP Management Scopes" section on the API Key edit form (visible only when `mcp.enabled`).
+- New `studio-mcp` rate limiter (per X-Api-Key, configurable via `mcp.http.rate_limit`).
+
+### Notes
+- No tools are registered yet; tools come in P2 (schema management), P3 (records), P4 (dashboards/panels), P5 (saved filters / API keys / polish).
+
 ## [1.2.0] - 2026-04-15
 
 ### Added
