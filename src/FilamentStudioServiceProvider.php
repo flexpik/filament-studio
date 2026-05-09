@@ -9,6 +9,7 @@ use Flexpik\FilamentStudio\Api\OpenApi\StudioOperationTransformer;
 use Flexpik\FilamentStudio\Api\StudioApiRouteRegistrar;
 use Flexpik\FilamentStudio\FieldTypes\FieldTypeRegistry;
 use Flexpik\FilamentStudio\FieldTypes\Types;
+use Flexpik\FilamentStudio\Mcp\Support\StudioApiKeyContext;
 use Flexpik\FilamentStudio\Models\StudioApiKey;
 use Flexpik\FilamentStudio\Models\StudioCollection;
 use Flexpik\FilamentStudio\Models\StudioDashboard;
@@ -67,6 +68,8 @@ class FilamentStudioServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
+        $this->app->scoped(StudioApiKeyContext::class);
+
         $this->app->bind(EavQueryBuilder::class, function ($app, $params) {
             return new EavQueryBuilder($params['collection']);
         });
