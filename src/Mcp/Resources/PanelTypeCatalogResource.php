@@ -17,6 +17,10 @@ use Laravel\Mcp\Server\Resource;
 #[Description('Catalog of all 9 panel types with key, label, description, and supported placements. For full config schema, read studio://panel-types/{key}.')]
 class PanelTypeCatalogResource extends Resource
 {
+    // Fallback properties for laravel/mcp versions that do not resolve PHP 8 attributes on Resource.
+    protected string $uri = 'studio://panel-types';
+
+    protected string $mimeType = 'application/json';
     public function handle(Request $request): Response
     {
         $registry = app(PanelTypeRegistry::class);

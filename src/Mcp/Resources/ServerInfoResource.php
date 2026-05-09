@@ -20,6 +20,10 @@ use Laravel\Mcp\Server\Resource;
 #[Description('Filament Studio server identity, feature flags, locales, and capability counts. Read first to discover the catalog of capabilities.')]
 class ServerInfoResource extends Resource
 {
+    // Fallback properties for laravel/mcp versions that do not resolve PHP 8 attributes on Resource.
+    protected string $uri = 'studio://info';
+
+    protected string $mimeType = 'application/json';
     public function handle(Request $request): Response
     {
         $key = app(StudioApiKeyContext::class)->current();

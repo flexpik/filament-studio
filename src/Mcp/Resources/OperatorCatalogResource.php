@@ -17,6 +17,10 @@ use Laravel\Mcp\Server\Resource;
 #[Description('All filter operators (with arity, label) plus the FilterGroup JSON shape used by studio_query_records.')]
 class OperatorCatalogResource extends Resource
 {
+    // Fallback properties for laravel/mcp versions that do not resolve PHP 8 attributes on Resource.
+    protected string $uri = 'studio://operators';
+
+    protected string $mimeType = 'application/json';
     public function handle(Request $request): Response
     {
         $operators = [];

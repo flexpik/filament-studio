@@ -17,6 +17,10 @@ use Laravel\Mcp\Server\Resource;
 #[Description('Catalog of all 33 field types. Each entry has key, label, category, and eav_cast. For full settings schema of one type, read studio://field-types/{key}.')]
 class FieldTypeCatalogResource extends Resource
 {
+    // Fallback properties for laravel/mcp versions that do not resolve PHP 8 attributes on Resource.
+    protected string $uri = 'studio://field-types';
+
+    protected string $mimeType = 'application/json';
     public function handle(Request $request): Response
     {
         $registry = app(FieldTypeRegistry::class);
