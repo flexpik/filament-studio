@@ -9,17 +9,17 @@ use Flexpik\FilamentStudio\Mcp\Exceptions\StudioNotFoundException;
 
 it('expired token uses EXPIRED_CONFIRM_TOKEN code', function () {
     $e = ConfirmTokenInvalidException::expired('ct_abc');
-    expect($e->mcpCode)->toBe('EXPIRED_CONFIRM_TOKEN')
+    expect($e->mcpCode())->toBe('EXPIRED_CONFIRM_TOKEN')
         ->and($e->mcpData())->toMatchArray(['next_action' => 'call preview_* again']);
 });
 
 it('mismatched token uses INVALID_CONFIRM_TOKEN code', function () {
-    expect(ConfirmTokenInvalidException::mismatched('ct_abc')->mcpCode)
+    expect(ConfirmTokenInvalidException::mismatched('ct_abc')->mcpCode())
         ->toBe('INVALID_CONFIRM_TOKEN');
 });
 
 it('consumed token uses CONSUMED_CONFIRM_TOKEN code', function () {
-    expect(ConfirmTokenInvalidException::consumed('ct_abc')->mcpCode)
+    expect(ConfirmTokenInvalidException::consumed('ct_abc')->mcpCode())
         ->toBe('CONSUMED_CONFIRM_TOKEN');
 });
 

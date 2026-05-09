@@ -8,7 +8,7 @@ use RuntimeException;
 
 class ConfirmTokenInvalidException extends RuntimeException
 {
-    private function __construct(public readonly string $mcpCode, public readonly string $token, string $message)
+    private function __construct(private readonly string $mcpCodeValue, public readonly string $token, string $message)
     {
         parent::__construct($message);
     }
@@ -26,6 +26,11 @@ class ConfirmTokenInvalidException extends RuntimeException
     public static function consumed(string $token): self
     {
         return new self('CONSUMED_CONFIRM_TOKEN', $token, 'Confirm token has already been used.');
+    }
+
+    public function mcpCode(): string
+    {
+        return $this->mcpCodeValue;
     }
 
     /** @return array<string, mixed> */
