@@ -17,6 +17,7 @@ use Flexpik\FilamentStudio\Mcp\Tools\Collections\GetCollectionTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Collections\ListCollectionsTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Collections\PreviewDeleteCollectionTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Collections\UpdateCollectionTool;
+use Flexpik\FilamentStudio\Mcp\Tools\Dashboards\CreateDashboardTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Dashboards\GetDashboardTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Dashboards\ListDashboardsTool;
 use Flexpik\FilamentStudio\Mcp\Tools\FieldOptions\SetFieldOptionsTool;
@@ -69,6 +70,7 @@ class StudioMcpServer extends Server
         DeleteRecordTool::class,
         ListDashboardsTool::class,
         GetDashboardTool::class,
+        CreateDashboardTool::class,
     ];
 
     /**
