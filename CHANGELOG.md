@@ -23,9 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `mcpCallTool($apiKey, $toolClass, $input)` Pest helper for MCP tool tests.
 - End-to-end HTTP integration test (`SchemaDesignFlowTest`) covering create→field→preview→delete flow.
 - Cross-tenant confirm-token isolation test.
-
-### Notes
-- No tools are registered yet beyond schema management; tools come in P3 (records), P4 (dashboards/panels), P5 (saved filters / API keys / polish).
+- **MCP Phase 3 (runtime tools).** 22 new tools complete the v1 MCP surface:
+  - Records: `studio_query_records`, `studio_get_record`, `studio_create_record`, `studio_update_record`, `studio_delete_record`.
+  - Dashboards: `studio_list_dashboards`, `studio_get_dashboard`, `studio_create_dashboard`, `studio_update_dashboard`, `studio_preview_delete_dashboard`, `studio_delete_dashboard` (confirm-token flow).
+  - Panels: `studio_create_panel`, `studio_update_panel`, `studio_delete_panel`, `studio_reorder_panels`.
+  - Saved filters: `studio_list_saved_filters`, `studio_save_filter` (upsert), `studio_delete_saved_filter`.
+  - API keys: `studio_list_api_keys`, `studio_get_api_key`, `studio_create_api_key` (returns secret once), `studio_revoke_api_key`.
+- McpSerializer extended with `record()`, `dashboard()`, `panel()`, `savedFilter()`, `apiKey()` shapes.
+- End-to-end stdio smoke test asserting the full 34-tool surface.
 
 ## [1.2.0] - 2026-04-15
 
