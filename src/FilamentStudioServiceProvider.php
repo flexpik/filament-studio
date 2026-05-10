@@ -9,6 +9,8 @@ use Flexpik\FilamentStudio\Api\OpenApi\StudioOperationTransformer;
 use Flexpik\FilamentStudio\Api\StudioApiRouteRegistrar;
 use Flexpik\FilamentStudio\FieldTypes\FieldTypeRegistry;
 use Flexpik\FilamentStudio\FieldTypes\Types;
+use Flexpik\FilamentStudio\Mcp\StudioMcpServer;
+use Flexpik\FilamentStudio\Mcp\Support\StudioApiKeyContext;
 use Flexpik\FilamentStudio\Models\StudioApiKey;
 use Flexpik\FilamentStudio\Models\StudioCollection;
 use Flexpik\FilamentStudio\Models\StudioDashboard;
@@ -35,6 +37,7 @@ use Flexpik\FilamentStudio\Support\PermissionRegistrar;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Laravel\Mcp\Facades\Mcp;
 use Spatie\Activitylog\ActivitylogServiceProvider;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -67,6 +70,8 @@ class FilamentStudioServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
+        $this->app->scoped(StudioApiKeyContext::class);
+
         $this->app->bind(EavQueryBuilder::class, function ($app, $params) {
             return new EavQueryBuilder($params['collection']);
         });
@@ -167,6 +172,13 @@ class FilamentStudioServiceProvider extends PackageServiceProvider
             return Limit::perMinute($limit)->by($key);
         });
 
+        RateLimiter::for('studio-mcp', function ($request) {
+            $limit = config('filament-studio.mcp.http.rate_limit', 120);
+            $key = $request->header('X-Api-Key', $request->ip());
+
+            return Limit::perMinute($limit)->by($key);
+        });
+
         $this->app->booted(function () {
             // Check both config and plugin instance — the plugin sets config
             // during Filament panel boot, which may run after app booted callbacks.
@@ -185,6 +197,21 @@ class FilamentStudioServiceProvider extends PackageServiceProvider
                             new StudioOperationTransformer,
                         ]);
                 }
+            }
+        });
+
+        $this->app->booted(function () {
+            if (! config('filament-studio.mcp.enabled', false)) {
+                return;
+            }
+
+            if (config('filament-studio.mcp.http.enabled', true)) {
+                require __DIR__.'/Mcp/Routes.php';
+            }
+
+            if (config('filament-studio.mcp.stdio.enabled', true)) {
+                $handle = config('filament-studio.mcp.stdio.handle', 'studio');
+                Mcp::local($handle, StudioMcpServer::class);
             }
         });
     }

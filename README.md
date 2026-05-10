@@ -87,6 +87,7 @@ Filament Studio turns your Filament admin panel into a flexible data platform. D
 - **No migrations per collection** — Add new data types at runtime without touching your codebase
 - **Full Filament integration** — Native forms, tables, filters, and actions that look and feel like hand-crafted resources
 - **Production-ready** — Multi-tenancy, multilingual content, authorization, versioning, soft deletes, and audit logging out of the box
+- **AI-native** — Built-in MCP server lets Claude, Cursor, and other AI tools manage your data model through natural language
 - **Extensible** — Register custom field types, panel types, condition resolvers, and lifecycle hooks
 
 ## Features
@@ -122,6 +123,28 @@ A visual filter builder with **23 operators**, nested AND/OR logic, dynamic vari
 ### REST API
 
 Auto-generated RESTful API with API key authentication, per-collection permissions, rate limiting, and OpenAPI documentation via Scramble.
+
+### MCP Server
+
+A built-in [Model Context Protocol](https://modelcontextprotocol.io/) server lets AI assistants (Claude, Cursor, Windsurf) manage your data model through natural language. Connect via stdio or HTTP and gain access to **34 tools** covering every aspect of Filament Studio:
+
+- **Schema design** — create and update collections, fields, and field options
+- **Data access** — query, create, update, and delete records with full filter-tree support
+- **Dashboards** — build and configure dashboards and panels
+- **Administration** — manage saved filters and API keys
+
+```json
+{
+  "mcpServers": {
+    "filament-studio": {
+      "type": "stdio",
+      "command": "php",
+      "args": ["artisan", "mcp:start", "studio"],
+      "env": { "STUDIO_API_KEY": "your-key", "STUDIO_MCP_ENABLED": "true" }
+    }
+  }
+}
+```
 
 ### Conditional Logic
 
@@ -278,6 +301,7 @@ This approach enables runtime schema changes without migrations while preserving
 | [Dashboards & Panels](docs/dashboards.md) | Dashboard builder, 9 panel types, variables |
 | [Filtering](docs/filtering.md) | 23 operators, filter trees, saved filters |
 | [REST API](docs/api.md) | Endpoints, authentication, permissions, rate limiting |
+| [MCP Server](docs/mcp.md) | AI assistant integration — 34 tools, stdio & HTTP transport, auth, rate limiting |
 | [Conditional Logic](docs/conditional-logic.md) | Dynamic visibility, required, and disabled states |
 | [Authorization](docs/authorization.md) | Policies, permissions, Spatie integration |
 | [Multi-Tenancy](docs/multi-tenancy.md) | Tenant scoping, lifecycle hooks |

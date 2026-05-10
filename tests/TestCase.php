@@ -18,6 +18,7 @@ use Filament\Widgets\WidgetsServiceProvider;
 use Flexpik\FilamentStudio\FilamentStudioPlugin;
 use Flexpik\FilamentStudio\FilamentStudioServiceProvider;
 use Illuminate\Foundation\Auth\User;
+use Laravel\Mcp\Server\McpServiceProvider;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 
@@ -38,6 +39,7 @@ abstract class TestCase extends OrchestraTestCase
             WidgetsServiceProvider::class,
             FilamentServiceProvider::class,
             LivewireServiceProvider::class,
+            McpServiceProvider::class,
             FilamentStudioServiceProvider::class,
         ];
     }

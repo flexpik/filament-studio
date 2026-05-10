@@ -4,6 +4,7 @@ namespace Flexpik\FilamentStudio\Models;
 
 use Flexpik\FilamentStudio\Database\Factories\StudioApiKeyFactory;
 use Flexpik\FilamentStudio\Enums\ApiAction;
+use Flexpik\FilamentStudio\Mcp\Support\StudioScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -13,6 +14,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $tenant_id
  * @property string $name
  * @property string $key
+ * @property bool $wildcard_access
  * @property array|null $permissions
  * @property bool $is_active
  * @property Carbon|null $last_used_at
@@ -35,6 +37,7 @@ class StudioApiKey extends Model
     protected function casts(): array
     {
         return [
+            'wildcard_access' => 'boolean',
             'permissions' => 'array',
             'is_active' => 'boolean',
             'last_used_at' => 'datetime',
@@ -52,6 +55,10 @@ class StudioApiKey extends Model
             return false;
         }
 
+        if ($this->wildcard_access) {
+            return true;
+        }
+
         $permissions = $this->permissions ?? [];
 
         if (isset($permissions[$collectionSlug]) && in_array($action->value, $permissions[$collectionSlug], true)) {
@@ -63,6 +70,27 @@ class StudioApiKey extends Model
         }
 
         return false;
+    }
+
+    public function canManage(StudioScope $scope): bool
+    {
+        if (! $this->is_active) {
+            return false;
+        }
+
+        if ($this->expires_at && $this->expires_at->isPast()) {
+            return false;
+        }
+
+        if ($this->wildcard_access) {
+            return true;
+        }
+
+        $permissions = $this->permissions ?? [];
+
+        $studioScopes = $permissions['_studio'] ?? [];
+
+        return in_array($scope->name(), $studioScopes, true);
     }
 
     public static function findByKey(string $plainKey): ?self

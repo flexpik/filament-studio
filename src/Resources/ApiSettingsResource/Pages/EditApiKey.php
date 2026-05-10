@@ -156,7 +156,17 @@ class EditApiKey extends EditRecord
     {
         $data['permissions'] = $this->buildPermissions($data);
 
-        unset($data['wildcard_access'], $data['permission_entries'], $data['_generated_api_key']);
+        $scopes = collect($data['mcp_scopes'] ?? [])
+            ->map(fn (string $value) => substr($value, strlen('_studio.')))
+            ->all();
+
+        if ($scopes !== []) {
+            $data['permissions']['_studio'] = $scopes;
+        } else {
+            unset($data['permissions']['_studio']);
+        }
+
+        unset($data['wildcard_access'], $data['permission_entries'], $data['_generated_api_key'], $data['mcp_scopes']);
 
         return $data;
     }

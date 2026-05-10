@@ -6,6 +6,7 @@ use Flexpik\FilamentStudio\Database\Factories\StudioFieldFactory;
 use Flexpik\FilamentStudio\Enums\EavCast;
 use Flexpik\FilamentStudio\Enums\FieldWidth;
 use Flexpik\FilamentStudio\Services\EavQueryBuilder;
+use Flexpik\FilamentStudio\Services\LocaleResolver;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -131,7 +132,7 @@ class StudioField extends Model
      */
     public function getTranslatedAttribute(string $attribute): ?string
     {
-        $resolver = app(\Flexpik\FilamentStudio\Services\LocaleResolver::class);
+        $resolver = app(LocaleResolver::class);
 
         if (! $resolver->isEnabled()) {
             return $this->{$attribute};

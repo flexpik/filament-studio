@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-05-10
+
+### Added
+- MCP server foundation (`src/Mcp/`) — opt-in via `mcp.enabled` config flag.
+- Both HTTP/SSE (mounted at `/ai/studio`) and stdio (`php artisan mcp:start studio`) transports.
+- Reuse of `StudioApiKey` for MCP auth with a new `_studio.*` management-scope namespace (`manage_collections`, `manage_dashboards`, `manage_filters`, `manage_api_keys`, `read_schema`).
+- Six capability-discovery Resources: `studio://info`, `studio://field-types`, `studio://field-types/{key}`, `studio://panel-types`, `studio://panel-types/{key}`, `studio://operators`.
+- "MCP Management Scopes" section on the API Key edit form (visible only when `mcp.enabled`).
+- New `studio-mcp` rate limiter (per X-Api-Key, configurable via `mcp.http.rate_limit`).
+- 12 schema-management MCP tools: `studio_list_collections`, `studio_get_collection`, `studio_create_collection`, `studio_update_collection`, `studio_preview_delete_collection`, `studio_delete_collection`, `studio_create_field`, `studio_update_field`, `studio_preview_delete_field`, `studio_delete_field`, `studio_reorder_fields`, `studio_set_field_options`.
+- Cache-backed per-tenant confirm-token flow for destructive collection/field deletes (5-minute TTL, one-time use, configurable via `mcp.confirm_token_ttl`).
+- Action layer (`Mcp/Actions/`) for collection/field/field-option mutations — framework-agnostic, reusable.
+- `StudioMcpExceptionHandler` mapping domain exceptions to JSON-RPC error codes per §6 of the design spec.
+- `McpSerializer` for canonical entity shapes shared across all schema-management tools.
+- Domain exception classes: `ConfirmTokenInvalidException`, `EavCastConflictException`, `IntegrityException`, `StudioNotFoundException` — each with `mcpCode()` and `mcpData()` for uniform handler calls.
+- `mcpCallTool($apiKey, $toolClass, $input)` Pest helper for MCP tool tests.
+- End-to-end HTTP integration test (`SchemaDesignFlowTest`) covering create→field→preview→delete flow.
+- Cross-tenant confirm-token isolation test.
+- **MCP Phase 3 (runtime tools).** 22 new tools complete the v1 MCP surface:
+  - Records: `studio_query_records`, `studio_get_record`, `studio_create_record`, `studio_update_record`, `studio_delete_record`.
+  - Dashboards: `studio_list_dashboards`, `studio_get_dashboard`, `studio_create_dashboard`, `studio_update_dashboard`, `studio_preview_delete_dashboard`, `studio_delete_dashboard` (confirm-token flow).
+  - Panels: `studio_create_panel`, `studio_update_panel`, `studio_delete_panel`, `studio_reorder_panels`.
+  - Saved filters: `studio_list_saved_filters`, `studio_save_filter` (upsert), `studio_delete_saved_filter`.
+  - API keys: `studio_list_api_keys`, `studio_get_api_key`, `studio_create_api_key` (returns secret once), `studio_revoke_api_key`.
+- McpSerializer extended with `record()`, `dashboard()`, `panel()`, `savedFilter()`, `apiKey()` shapes.
+- End-to-end stdio smoke test asserting the full 34-tool surface.
+
 ## [1.2.0] - 2026-04-15
 
 ### Added

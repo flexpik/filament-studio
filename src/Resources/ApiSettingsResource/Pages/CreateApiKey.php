@@ -20,7 +20,17 @@ class CreateApiKey extends CreateRecord
 
         $data['permissions'] = $this->buildPermissions($data);
 
-        unset($data['wildcard_access'], $data['permission_entries']);
+        $scopes = collect($data['mcp_scopes'] ?? [])
+            ->map(fn (string $value) => substr($value, strlen('_studio.')))
+            ->all();
+
+        if ($scopes !== []) {
+            $data['permissions']['_studio'] = $scopes;
+        } else {
+            unset($data['permissions']['_studio']);
+        }
+
+        unset($data['wildcard_access'], $data['permission_entries'], $data['mcp_scopes']);
 
         return $data;
     }
