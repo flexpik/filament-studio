@@ -30,6 +30,7 @@ use Flexpik\FilamentStudio\Mcp\Tools\Fields\PreviewDeleteFieldTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Fields\ReorderFieldsTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Fields\UpdateFieldTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Panels\CreatePanelTool;
+use Flexpik\FilamentStudio\Mcp\Tools\Panels\DeletePanelTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Panels\UpdatePanelTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Records\CreateRecordTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Records\DeleteRecordTool;
@@ -81,6 +82,7 @@ class StudioMcpServer extends Server
         DeleteDashboardTool::class,
         CreatePanelTool::class,
         UpdatePanelTool::class,
+        DeletePanelTool::class,
     ];
 
     /**
