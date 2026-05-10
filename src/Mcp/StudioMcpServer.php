@@ -38,6 +38,7 @@ use Flexpik\FilamentStudio\Mcp\Tools\Records\DeleteRecordTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Records\GetRecordTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Records\QueryRecordsTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Records\UpdateRecordTool;
+use Flexpik\FilamentStudio\Mcp\Tools\SavedFilters\ListSavedFiltersTool;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Prompt;
 use Laravel\Mcp\Server\Tool;
@@ -85,6 +86,7 @@ class StudioMcpServer extends Server
         UpdatePanelTool::class,
         DeletePanelTool::class,
         ReorderPanelsTool::class,
+        ListSavedFiltersTool::class,
     ];
 
     /**
