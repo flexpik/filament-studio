@@ -31,6 +31,7 @@ use Flexpik\FilamentStudio\Mcp\Tools\Fields\ReorderFieldsTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Fields\UpdateFieldTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Panels\CreatePanelTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Panels\DeletePanelTool;
+use Flexpik\FilamentStudio\Mcp\Tools\Panels\ReorderPanelsTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Panels\UpdatePanelTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Records\CreateRecordTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Records\DeleteRecordTool;
@@ -83,6 +84,7 @@ class StudioMcpServer extends Server
         CreatePanelTool::class,
         UpdatePanelTool::class,
         DeletePanelTool::class,
+        ReorderPanelsTool::class,
     ];
 
     /**
