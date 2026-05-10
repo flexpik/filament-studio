@@ -11,6 +11,10 @@ use Flexpik\FilamentStudio\Mcp\Resources\PanelTypeCatalogResource;
 use Flexpik\FilamentStudio\Mcp\Resources\PanelTypeDetailResource;
 use Flexpik\FilamentStudio\Mcp\Resources\ServerInfoResource;
 use Flexpik\FilamentStudio\Mcp\Support\ResolveStudioApiKeyFromEnv;
+use Flexpik\FilamentStudio\Mcp\Tools\ApiKeys\CreateApiKeyTool;
+use Flexpik\FilamentStudio\Mcp\Tools\ApiKeys\GetApiKeyTool;
+use Flexpik\FilamentStudio\Mcp\Tools\ApiKeys\ListApiKeysTool;
+use Flexpik\FilamentStudio\Mcp\Tools\ApiKeys\RevokeApiKeyTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Collections\CreateCollectionTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Collections\DeleteCollectionTool;
 use Flexpik\FilamentStudio\Mcp\Tools\Collections\GetCollectionTool;
@@ -91,6 +95,10 @@ class StudioMcpServer extends Server
         ListSavedFiltersTool::class,
         SaveFilterTool::class,
         DeleteSavedFilterTool::class,
+        ListApiKeysTool::class,
+        GetApiKeyTool::class,
+        CreateApiKeyTool::class,
+        RevokeApiKeyTool::class,
     ];
 
     /**
