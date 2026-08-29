@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-08-29
+
+### Fixed
+
+- Dashboard panel creation ("The collection field is required.", "The display Template field is required.") — required fields inside a panel type's `configSchema()` (e.g. `collection_id`, `display_template`) that only appear after a Panel Type is selected now declare an explicit default. Without it, Livewire cannot bind the reactively-added field on the client, so the value is visibly filled in but never reaches the server. Affects all built-in panel types (Metric, List, Time Series, Bar Chart, Line Chart, Pie Chart, Meter, Label, Variable).
+
 ## [1.3.0] - 2026-05-10
 
 ### Added

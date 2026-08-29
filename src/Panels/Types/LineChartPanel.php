@@ -35,6 +35,7 @@ class LineChartPanel extends AbstractStudioPanel
                 ->options(fn () => StudioCollection::query()->forTenant(Filament::getTenant()?->getKey())->pluck('label', 'id'))
                 ->required()
                 ->live()
+                ->default(null)
                 ->afterStateUpdated(fn (Set $set) => $set('group_field', null)),
             Select::make('group_field')
                 ->label('Group Field (X-axis)')
@@ -48,7 +49,8 @@ class LineChartPanel extends AbstractStudioPanel
                         ->where('collection_id', $collectionId)
                         ->pluck('label', 'column_name');
                 })
-                ->required(),
+                ->required()
+                ->default(null),
             Repeater::make('series')
                 ->label('Series')
                 ->schema([
@@ -64,7 +66,8 @@ class LineChartPanel extends AbstractStudioPanel
                                 ->where('collection_id', $collectionId)
                                 ->pluck('label', 'column_name');
                         })
-                        ->required(),
+                        ->required()
+                        ->default(null),
                     Select::make('aggregate_function')
                         ->label('Function')
                         ->options(

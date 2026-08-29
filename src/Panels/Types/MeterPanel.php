@@ -43,6 +43,7 @@ class MeterPanel extends AbstractStudioPanel
                 ->options(fn () => StudioCollection::query()->forTenant(Filament::getTenant()?->getKey())->pluck('label', 'id'))
                 ->required()
                 ->live()
+                ->default(null)
                 ->afterStateUpdated(fn (Set $set) => $set('field', null)),
             Select::make('field')
                 ->label('Field')
@@ -56,7 +57,8 @@ class MeterPanel extends AbstractStudioPanel
                         ->where('collection_id', $collectionId)
                         ->pluck('label', 'column_name');
                 })
-                ->required(),
+                ->required()
+                ->default(null),
             Select::make('aggregate_function')
                 ->label('Function')
                 ->options(
@@ -64,7 +66,8 @@ class MeterPanel extends AbstractStudioPanel
                         ->mapWithKeys(fn (AggregateFunction $fn) => [$fn->value => $fn->label()])
                         ->toArray()
                 )
-                ->required(),
+                ->required()
+                ->default(null),
             TextInput::make('maximum')
                 ->label('Maximum value')
                 ->numeric()

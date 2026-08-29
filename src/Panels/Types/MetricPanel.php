@@ -36,6 +36,7 @@ class MetricPanel extends AbstractStudioPanel
                 ->options(fn () => StudioCollection::query()->forTenant(Filament::getTenant()?->getKey())->pluck('label', 'id'))
                 ->required()
                 ->live()
+                ->default(null)
                 ->afterStateUpdated(fn (Set $set) => $set('field', null)),
             Select::make('field')
                 ->label('Field')
@@ -49,7 +50,8 @@ class MetricPanel extends AbstractStudioPanel
                         ->where('collection_id', $collectionId)
                         ->pluck('label', 'column_name');
                 })
-                ->required(),
+                ->required()
+                ->default(null),
             Select::make('aggregate_function')
                 ->label('Function')
                 ->options(
@@ -57,7 +59,8 @@ class MetricPanel extends AbstractStudioPanel
                         ->mapWithKeys(fn (AggregateFunction $fn) => [$fn->value => $fn->label()])
                         ->toArray()
                 )
-                ->required(),
+                ->required()
+                ->default(null),
             TextInput::make('prefix')
                 ->label('Prefix'),
             TextInput::make('suffix')
@@ -75,12 +78,15 @@ class MetricPanel extends AbstractStudioPanel
                 ->schema([
                     Select::make('operator')
                         ->options(['>' => '>', '>=' => '>=', '<' => '<', '<=' => '<=', '=' => '='])
-                        ->required(),
+                        ->required()
+                        ->default(null),
                     TextInput::make('threshold')
                         ->numeric()
-                        ->required(),
+                        ->required()
+                        ->default(null),
                     ColorPicker::make('color')
-                        ->required(),
+                        ->required()
+                        ->default(null),
                 ])
                 ->defaultItems(0)
                 ->collapsible(),

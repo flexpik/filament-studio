@@ -34,6 +34,7 @@ class BarChartPanel extends AbstractStudioPanel
                 ->options(fn () => StudioCollection::query()->forTenant(Filament::getTenant()?->getKey())->pluck('label', 'id'))
                 ->required()
                 ->live()
+                ->default(null)
                 ->afterStateUpdated(fn (Set $set) => $set('group_field', null) || $set('value_field', null)),
             Select::make('group_field')
                 ->label('Group Field')
@@ -47,7 +48,8 @@ class BarChartPanel extends AbstractStudioPanel
                         ->where('collection_id', $collectionId)
                         ->pluck('label', 'column_name');
                 })
-                ->required(),
+                ->required()
+                ->default(null),
             Select::make('value_field')
                 ->label('Value Field')
                 ->options(function (Get $get) {
@@ -60,7 +62,8 @@ class BarChartPanel extends AbstractStudioPanel
                         ->where('collection_id', $collectionId)
                         ->pluck('label', 'column_name');
                 })
-                ->required(),
+                ->required()
+                ->default(null),
             Select::make('aggregate_function')
                 ->label('Function')
                 ->options(
@@ -68,7 +71,8 @@ class BarChartPanel extends AbstractStudioPanel
                         ->mapWithKeys(fn (AggregateFunction $fn) => [$fn->value => $fn->label()])
                         ->toArray()
                 )
-                ->required(),
+                ->required()
+                ->default(null),
             Toggle::make('horizontal')
                 ->label('Horizontal bars')
                 ->default(false),
