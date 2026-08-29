@@ -96,4 +96,35 @@ return [
             'log_errors' => env('STUDIO_MCP_LOG_ERRORS', true),
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Flows
+    |--------------------------------------------------------------------------
+    |
+    | Configure the Flows system for workflow automation, queueing, and logging.
+    |
+    */
+    'flows' => [
+        'enabled' => env('STUDIO_FLOWS_ENABLED', false),
+        'queue' => env('STUDIO_FLOWS_QUEUE', 'default'),
+        'connection' => env('STUDIO_FLOWS_CONNECTION'),
+        'log_channel' => env('STUDIO_FLOWS_LOG_CHANNEL', 'daily'),
+        'log_retention_days' => (int) env('STUDIO_FLOWS_LOG_RETENTION_DAYS', 30),
+        'max_call_depth' => (int) env('STUDIO_FLOWS_MAX_CALL_DEPTH', 5),
+        'webhook_rate_limit_per_minute' => env('STUDIO_FLOWS_WEBHOOK_RATE_LIMIT', 60),
+        'webhook_timestamp_window_seconds' => env('STUDIO_FLOWS_WEBHOOK_TS_WINDOW', 300),
+        'webhook_ip_allowlist' => [],
+        'sensitive_key_patterns' => [
+            '/password/i',
+            '/token/i',
+            '/secret/i',
+            '/api[_-]?key/i',
+            '/authorization/i',
+            '/bearer/i',
+        ],
+        'export' => [
+            'max_range_days' => (int) env('STUDIO_FLOWS_EXPORT_MAX_RANGE_DAYS', 30),
+        ],
+    ],
 ];

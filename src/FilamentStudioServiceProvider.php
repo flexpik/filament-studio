@@ -4,11 +4,51 @@ namespace Flexpik\FilamentStudio;
 
 use Dedoc\Scramble\Scramble;
 use Filament\Facades\Filament;
+use Flexpik\FilamentStudio\Api\Flows\StudioFlowsApiRouteRegistrar;
 use Flexpik\FilamentStudio\Api\OpenApi\StudioDocumentTransformer;
 use Flexpik\FilamentStudio\Api\OpenApi\StudioOperationTransformer;
 use Flexpik\FilamentStudio\Api\StudioApiRouteRegistrar;
 use Flexpik\FilamentStudio\FieldTypes\FieldTypeRegistry;
 use Flexpik\FilamentStudio\FieldTypes\Types;
+use Flexpik\FilamentStudio\Flows\Commands\BackfillFlowVersioningCommand;
+use Flexpik\FilamentStudio\Flows\Commands\DispatchScheduledFlowsCommand;
+use Flexpik\FilamentStudio\Flows\Engine\GraphWalker;
+use Flexpik\FilamentStudio\Flows\Engine\LogMaskingService;
+use Flexpik\FilamentStudio\Flows\Engine\Templating\TemplateEngine;
+use Flexpik\FilamentStudio\Flows\Models\StudioFlow;
+use Flexpik\FilamentStudio\Flows\Models\StudioFlowRun;
+use Flexpik\FilamentStudio\Flows\Observers\RecordLifecycleObserver;
+use Flexpik\FilamentStudio\Flows\Observers\StudioFlowObserver;
+use Flexpik\FilamentStudio\Flows\Operations\Communication\HttpRequestActivity;
+use Flexpik\FilamentStudio\Flows\Operations\Communication\HttpRequestConfig;
+use Flexpik\FilamentStudio\Flows\Operations\Communication\SendEmailActivity;
+use Flexpik\FilamentStudio\Flows\Operations\Communication\SendEmailConfig;
+use Flexpik\FilamentStudio\Flows\Operations\Composition\TriggerFlowActivity;
+use Flexpik\FilamentStudio\Flows\Operations\Composition\TriggerFlowConfig;
+use Flexpik\FilamentStudio\Flows\Operations\Data\TransformPayloadActivity;
+use Flexpik\FilamentStudio\Flows\Operations\Data\TransformPayloadConfig;
+use Flexpik\FilamentStudio\Flows\Operations\Logic\ConditionActivity;
+use Flexpik\FilamentStudio\Flows\Operations\Logic\ConditionConfig;
+use Flexpik\FilamentStudio\Flows\Operations\Logic\LogMessageActivity;
+use Flexpik\FilamentStudio\Flows\Operations\Logic\LogMessageConfig;
+use Flexpik\FilamentStudio\Flows\Operations\NoOpActivity;
+use Flexpik\FilamentStudio\Flows\Operations\OperationRegistry;
+use Flexpik\FilamentStudio\Flows\Operations\Records\CreateRecordActivity;
+use Flexpik\FilamentStudio\Flows\Operations\Records\CreateRecordConfig;
+use Flexpik\FilamentStudio\Flows\Operations\Records\DeleteRecordActivity;
+use Flexpik\FilamentStudio\Flows\Operations\Records\DeleteRecordConfig;
+use Flexpik\FilamentStudio\Flows\Operations\Records\ReadRecordActivity;
+use Flexpik\FilamentStudio\Flows\Operations\Records\ReadRecordConfig;
+use Flexpik\FilamentStudio\Flows\Operations\Records\UpdateRecordActivity;
+use Flexpik\FilamentStudio\Flows\Operations\Records\UpdateRecordConfig;
+use Flexpik\FilamentStudio\Flows\Policies\FlowPolicy;
+use Flexpik\FilamentStudio\Flows\Security\MasksSensitiveValues;
+use Flexpik\FilamentStudio\Flows\Triggers\CollectionEventTrigger;
+use Flexpik\FilamentStudio\Flows\Triggers\EventSubscriptionRegistry;
+use Flexpik\FilamentStudio\Flows\Triggers\ManualTrigger;
+use Flexpik\FilamentStudio\Flows\Triggers\Schedule\ScheduleTrigger;
+use Flexpik\FilamentStudio\Flows\Triggers\TriggerRegistry;
+use Flexpik\FilamentStudio\Flows\Triggers\WebhookTrigger;
 use Flexpik\FilamentStudio\Mcp\StudioMcpServer;
 use Flexpik\FilamentStudio\Mcp\Support\StudioApiKeyContext;
 use Flexpik\FilamentStudio\Models\StudioApiKey;
@@ -33,8 +73,11 @@ use Flexpik\FilamentStudio\Policies\StudioDashboardPolicy;
 use Flexpik\FilamentStudio\Services\EavQueryBuilder;
 use Flexpik\FilamentStudio\Services\LocaleResolver;
 use Flexpik\FilamentStudio\Services\VariableResolver;
+use Flexpik\FilamentStudio\Support\FilamentStudioManager;
 use Flexpik\FilamentStudio\Support\PermissionRegistrar;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Mcp\Facades\Mcp;
@@ -63,7 +106,18 @@ class FilamentStudioServiceProvider extends PackageServiceProvider
                 'create_studio_dashboards_table',
                 'create_studio_panels_table',
                 'create_studio_api_keys_table',
+                'add_api_enabled_to_studio_collections_table',
                 'z_add_multilingual_columns',
+                'create_studio_flows_table',
+                'create_studio_flow_versions_table',
+                'create_studio_flow_runs_table',
+                'create_studio_flow_run_steps_table',
+                'create_studio_flow_secrets_table',
+                'z_add_versioning_columns_to_flows',
+                'z_migrate_mvp_flows_to_versioning',
+                'z_alter_studio_flows_add_webhook_auth_mode',
+                'create_studio_flow_audit_log_table',
+                'z_add_observability_columns_to_flow_runs_and_steps',
             ])
             ->hasViews();
     }
@@ -78,6 +132,35 @@ class FilamentStudioServiceProvider extends PackageServiceProvider
 
         $this->app->singleton(VariableResolver::class);
         $this->app->singleton(LocaleResolver::class);
+        $this->app->singleton(FilamentStudioManager::class);
+
+        $this->app->singleton(OperationRegistry::class, function () {
+            $registry = new OperationRegistry;
+            $registry->register('noop', 'No-op', NoOpActivity::class);
+
+            $registry->register('condition', 'Condition', ConditionActivity::class, configSchema: ConditionConfig::class);
+            $registry->register('transform_payload', 'Transform Payload', TransformPayloadActivity::class, configSchema: TransformPayloadConfig::class);
+
+            $registry->register('create_record', 'Create Record', CreateRecordActivity::class, configSchema: CreateRecordConfig::class);
+            $registry->register('read_record', 'Read Record', ReadRecordActivity::class, configSchema: ReadRecordConfig::class);
+            $registry->register('update_record', 'Update Record', UpdateRecordActivity::class, configSchema: UpdateRecordConfig::class, dangerous: true);
+            $registry->register('delete_record', 'Delete Record', DeleteRecordActivity::class, configSchema: DeleteRecordConfig::class, dangerous: true);
+
+            $registry->register('send_email', 'Send Email', SendEmailActivity::class, configSchema: SendEmailConfig::class);
+            $registry->register('http_request', 'HTTP Request', HttpRequestActivity::class, configSchema: HttpRequestConfig::class, dangerous: true);
+
+            $registry->register('log_message', 'Log Message', LogMessageActivity::class, configSchema: LogMessageConfig::class);
+            $registry->register('trigger_flow', 'Trigger Flow', TriggerFlowActivity::class, configSchema: TriggerFlowConfig::class);
+
+            return $registry;
+        });
+
+        $this->app->singleton(TriggerRegistry::class);
+        $this->app->singleton(EventSubscriptionRegistry::class);
+        $this->app->singleton(TemplateEngine::class);
+        $this->app->singleton(GraphWalker::class);
+        $this->app->singleton(LogMaskingService::class);
+        $this->app->singleton(MasksSensitiveValues::class);
 
         $this->app->singleton(PanelTypeRegistry::class, function () {
             $registry = new PanelTypeRegistry;
@@ -145,15 +228,27 @@ class FilamentStudioServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
+        $this->loadStubMigrations();
+
         \Livewire\Livewire::component('filter-builder', Livewire\FilterBuilder::class);
         \Livewire\Livewire::component('studio-locale-switcher', Livewire\LocaleSwitcher::class);
 
         StudioRecord::observe(RecordVersioningObserver::class);
+        StudioRecord::observe(RecordLifecycleObserver::class);
         StudioCollection::observe(StudioCollectionObserver::class);
+        StudioFlow::observe(StudioFlowObserver::class);
+
+        $this->bootDefaultFlowTriggers();
+        $this->bootFlowScheduler();
+        $this->commands([
+            BackfillFlowVersioningCommand::class,
+            DispatchScheduledFlowsCommand::class,
+        ]);
 
         Gate::policy(StudioCollection::class, StudioCollectionPolicy::class);
         Gate::policy(StudioDashboard::class, StudioDashboardPolicy::class);
         Gate::policy(StudioApiKey::class, StudioApiKeyPolicy::class);
+        Gate::policy(StudioFlow::class, FlowPolicy::class);
 
         if (class_exists(ActivitylogServiceProvider::class)) {
             $this->registerActivityLogging();
@@ -179,6 +274,16 @@ class FilamentStudioServiceProvider extends PackageServiceProvider
             return Limit::perMinute($limit)->by($key);
         });
 
+        RateLimiter::for('studio-flow-webhook', function (Request $request) {
+            $limit = config('filament-studio.flows.webhook_rate_limit_per_minute', 60);
+            $key = ($request->route('flowSlug') ?? '').'|'.$request->ip();
+
+            return Limit::perMinute($limit)
+                ->by($key)
+                ->response(fn () => response()->json(['error' => 'rate_limited'], 429)
+                    ->header('Retry-After', '60'));
+        });
+
         $this->app->booted(function () {
             // Check both config and plugin instance — the plugin sets config
             // during Filament panel boot, which may run after app booted callbacks.
@@ -197,6 +302,10 @@ class FilamentStudioServiceProvider extends PackageServiceProvider
                             new StudioOperationTransformer,
                         ]);
                 }
+            }
+
+            if (config('filament-studio.flows.enabled', false)) {
+                StudioFlowsApiRouteRegistrar::register();
             }
         });
 
@@ -237,6 +346,33 @@ class FilamentStudioServiceProvider extends PackageServiceProvider
         return false;
     }
 
+    protected function bootDefaultFlowTriggers(): void
+    {
+        $registry = $this->app->make(TriggerRegistry::class);
+
+        $registry->register('manual', 'Manual', ManualTrigger::class);
+        $registry->register('webhook', 'Webhook', WebhookTrigger::class);
+        $registry->register('collection_event', 'Collection Event', CollectionEventTrigger::class);
+        $registry->register('schedule', 'Schedule', ScheduleTrigger::class);
+    }
+
+    protected function bootFlowScheduler(): void
+    {
+        $this->app->afterResolving(Schedule::class, function ($schedule) {
+            if (! config('filament-studio.flows.enabled', false)) {
+                return;
+            }
+
+            $schedule->command('studio:flows:dispatch-scheduled')
+                ->everyMinute()
+                ->withoutOverlapping()
+                ->onOneServer();
+
+            $schedule->command('model:prune', ['--model' => [StudioFlowRun::class]])
+                ->daily();
+        });
+    }
+
     protected function registerActivityLogging(): void
     {
         if (! function_exists('activity')) {
@@ -263,5 +399,28 @@ class FilamentStudioServiceProvider extends PackageServiceProvider
                 ->causedBy(auth()->user())
                 ->log('deleted');
         });
+    }
+
+    protected function loadStubMigrations(): void
+    {
+        $stubDir = __DIR__.'/../database/migrations';
+        $cacheKey = md5(implode(',', $this->package->migrationFileNames));
+        $tempDir = sys_get_temp_dir().'/filament-studio-migrations-'.$cacheKey;
+
+        if (! is_dir($tempDir)) {
+            mkdir($tempDir, 0755, true);
+
+            // Use ordered list from hasMigrations() so FK dependencies are respected.
+            // Prefix with 2020_ so they sort after Laravel's 0001_ default migrations.
+            foreach (array_values($this->package->migrationFileNames) as $i => $name) {
+                $seq = str_pad((string) ($i + 1), 6, '0', STR_PAD_LEFT);
+                $stub = "{$stubDir}/{$name}.php.stub";
+                if (file_exists($stub)) {
+                    copy($stub, "{$tempDir}/2020_01_01_{$seq}_{$name}.php");
+                }
+            }
+        }
+
+        $this->loadMigrationsFrom($tempDir);
     }
 }

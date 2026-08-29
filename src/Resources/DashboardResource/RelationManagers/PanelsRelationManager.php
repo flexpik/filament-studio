@@ -12,6 +12,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -36,7 +37,18 @@ class PanelsRelationManager extends RelationManager
                     ->label('Type')
                     ->options($typeOptions)
                     ->required()
-                    ->live(),
+                    ->live()
+                    ->afterStateUpdated(function (?string $state, Set $set) use ($registry): void {
+                        // Seed the config container with the panel type's defaults so the
+                        // dependent config fields always hydrate against an array. Without
+                        // this, `config` is null on a fresh panel and Livewire throws
+                        // "Cannot set properties of null (setting 'collection_id')".
+                        try {
+                            $set('config', $state ? $registry->get($state)::defaultConfig() : []);
+                        } catch (\InvalidArgumentException) {
+                            $set('config', []);
+                        }
+                    }),
             ]),
             Section::make('Header')->schema([
                 Toggle::make('header_visible')

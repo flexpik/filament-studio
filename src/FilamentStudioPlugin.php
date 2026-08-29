@@ -6,6 +6,13 @@ use Filament\Contracts\Plugin;
 use Filament\Facades\Filament;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
+use Flexpik\FilamentStudio\Flows\Filament\Resources\FlowResource;
+use Flexpik\FilamentStudio\Flows\Filament\Widgets\FlowDurationWidget;
+use Flexpik\FilamentStudio\Flows\Filament\Widgets\FlowFailureRateWidget;
+use Flexpik\FilamentStudio\Flows\Filament\Widgets\RecentFlowRunsWidget;
+use Flexpik\FilamentStudio\Flows\Filament\Widgets\TopFailingFlowsWidget;
+use Flexpik\FilamentStudio\Flows\Operations\OperationRegistry;
+use Flexpik\FilamentStudio\Flows\Triggers\TriggerRegistry;
 use Flexpik\FilamentStudio\Models\StudioCollection;
 use Flexpik\FilamentStudio\Models\StudioDashboard;
 use Flexpik\FilamentStudio\Models\StudioField;
@@ -84,10 +91,18 @@ class FilamentStudioPlugin implements Plugin
             CollectionManagerResource::class,
             DynamicCollectionResource::class,
             DashboardResource::class,
+            FlowResource::class,
         ]);
 
         $panel->pages([
             StudioDashboardPage::class,
+        ]);
+
+        $panel->widgets([
+            RecentFlowRunsWidget::class,
+            FlowFailureRateWidget::class,
+            TopFailingFlowsWidget::class,
+            FlowDurationWidget::class,
         ]);
     }
 
@@ -417,6 +432,20 @@ class FilamentStudioPlugin implements Plugin
         }
 
         return $query;
+    }
+
+    // --- Flow Plugin API ---
+
+    public static function registerFlowOperation(string $key, string $label, string $activity, ?string $configSchema = null): void
+    {
+        app(OperationRegistry::class)
+            ->register($key, $label, $activity, $configSchema);
+    }
+
+    public static function registerFlowTrigger(string $key, string $label, string $trigger, ?string $configSchema = null): void
+    {
+        app(TriggerRegistry::class)
+            ->register($key, $label, $trigger, $configSchema);
     }
 
     // --- Reset All Hooks ---

@@ -1,0 +1,52 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        $prefix = config('filament-studio.table_prefix', 'studio_');
+
+        Schema::table($prefix.'flows', function (Blueprint $table) {
+            $table->uuid('published_version_id')->nullable()->after('webhook_secret');
+            $table->json('draft_graph')->nullable()->after('published_version_id');
+            $table->timestamp('draft_updated_at')->nullable()->after('draft_graph');
+        });
+
+        Schema::table($prefix.'flow_versions', function (Blueprint $table) {
+            $table->string('published_by')->nullable()->after('change_summary');
+            $table->index(['flow_id', 'published_at'], 'flow_versions_flow_published_idx');
+        });
+
+        Schema::table($prefix.'flow_runs', function (Blueprint $table) {
+            $table->json('inline_graph')->nullable()->after('trigger_payload');
+        });
+
+        // Make flow_version_id nullable on drivers that support change(); SQLite tests already
+        // permit null inserts since the column has no NOT NULL constraint until the FK is added.
+        if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+            Schema::table($prefix.'flow_runs', function (Blueprint $table) {
+                $table->uuid('flow_version_id')->nullable()->change();
+            });
+        }
+    }
+
+    public function down(): void
+    {
+        $prefix = config('filament-studio.table_prefix', 'studio_');
+
+        Schema::table($prefix.'flow_runs', function (Blueprint $table) {
+            $table->dropColumn('inline_graph');
+        });
+        Schema::table($prefix.'flow_versions', function (Blueprint $table) {
+            $table->dropIndex('flow_versions_flow_published_idx');
+            $table->dropColumn('published_by');
+        });
+        Schema::table($prefix.'flows', function (Blueprint $table) {
+            $table->dropColumn(['published_version_id', 'draft_graph', 'draft_updated_at']);
+        });
+    }
+};

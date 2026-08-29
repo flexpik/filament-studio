@@ -27,12 +27,13 @@ it('saves _studio scopes to permissions when checked in the form', function () {
 it('exposes all StudioScope cases in the form options helper', function () {
     $options = StudioScope::asSelectOptions();
 
-    expect($options)->toHaveCount(5);
+    expect($options)->toHaveCount(6);
     expect(array_keys($options))->toBe([
         '_studio.manage_collections',
         '_studio.manage_dashboards',
         '_studio.manage_filters',
         '_studio.manage_api_keys',
         '_studio.read_schema',
+        '_studio.flows',
     ]);
 });

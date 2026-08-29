@@ -1,0 +1,85 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+/**
+ * Phase 10 (Observability) retro-added these columns/indexes to the base
+ * create_studio_flow_runs_table / create_studio_flow_run_steps_table stubs.
+ * Fresh installs get them from those stubs, so every change here is guarded
+ * to no-op when the column/index already exists; installs that ran the
+ * pre-P10 create migrations get the columns added here instead.
+ */
+return new class extends Migration
+{
+    public function up(): void
+    {
+        $prefix = config('filament-studio.table_prefix', 'studio_');
+        $runs = $prefix.'flow_runs';
+        $steps = $prefix.'flow_run_steps';
+
+        Schema::table($runs, function (Blueprint $table) use ($runs) {
+            if (! Schema::hasColumn($runs, 'dry_run')) {
+                $table->boolean('dry_run')->default(false)->after('duration_ms');
+            }
+            if (! Schema::hasIndex($runs, ['status', 'started_at'])) {
+                $table->index(['status', 'started_at']);
+            }
+            if (! Schema::hasIndex($runs, ['flow_id', 'status', 'started_at'])) {
+                $table->index(['flow_id', 'status', 'started_at']);
+            }
+        });
+
+        if (Schema::hasColumn($steps, 'attempt') && ! Schema::hasColumn($steps, 'attempt_number')) {
+            Schema::table($steps, function (Blueprint $table) {
+                $table->renameColumn('attempt', 'attempt_number');
+            });
+        }
+
+        Schema::table($steps, function (Blueprint $table) use ($steps) {
+            if (! Schema::hasColumn($steps, 'attempt_number')) {
+                $table->unsignedInteger('attempt_number')->default(1)->after('operation_type');
+            }
+            if (! Schema::hasColumn($steps, 'error_class')) {
+                $table->string('error_class')->nullable()->after('error_trace');
+            }
+            if (! Schema::hasColumn($steps, 'branch_taken')) {
+                $table->string('branch_taken')->nullable()->after('error_class');
+            }
+            if (! Schema::hasIndex($steps, ['flow_run_id', 'operation_key'])) {
+                $table->index(['flow_run_id', 'operation_key']);
+            }
+        });
+    }
+
+    public function down(): void
+    {
+        $prefix = config('filament-studio.table_prefix', 'studio_');
+        $runs = $prefix.'flow_runs';
+        $steps = $prefix.'flow_run_steps';
+
+        Schema::table($runs, function (Blueprint $table) use ($runs) {
+            if (Schema::hasIndex($runs, ['flow_id', 'status', 'started_at'])) {
+                $table->dropIndex(['flow_id', 'status', 'started_at']);
+            }
+            if (Schema::hasIndex($runs, ['status', 'started_at'])) {
+                $table->dropIndex(['status', 'started_at']);
+            }
+            if (Schema::hasColumn($runs, 'dry_run')) {
+                $table->dropColumn('dry_run');
+            }
+        });
+
+        Schema::table($steps, function (Blueprint $table) use ($steps) {
+            if (Schema::hasIndex($steps, ['flow_run_id', 'operation_key'])) {
+                $table->dropIndex(['flow_run_id', 'operation_key']);
+            }
+            foreach (['error_class', 'branch_taken'] as $column) {
+                if (Schema::hasColumn($steps, $column)) {
+                    $table->dropColumn($column);
+                }
+            }
+        });
+    }
+};

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Flexpik\FilamentStudio\Mcp\Support\StudioScope;
 
-it('exposes all five management scopes prefixed with _studio.', function () {
+it('exposes all six management scopes prefixed with _studio.', function () {
     $values = array_map(fn (StudioScope $s) => $s->value, StudioScope::cases());
 
     expect($values)->toBe([
@@ -13,6 +13,7 @@ it('exposes all five management scopes prefixed with _studio.', function () {
         '_studio.manage_filters',
         '_studio.manage_api_keys',
         '_studio.read_schema',
+        '_studio.flows',
     ]);
 });
 
@@ -27,4 +28,5 @@ it('returns a human label for each scope', function () {
     expect(StudioScope::ManageFilters->label())->toBe('Manage Saved Filters');
     expect(StudioScope::ManageApiKeys->label())->toBe('Manage API Keys');
     expect(StudioScope::ReadSchema->label())->toBe('Read Schema (Read-Only)');
+    expect(StudioScope::Flows->label())->toBe('Manage Flows');
 });
