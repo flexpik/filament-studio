@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-08-29
+
+### Changed
+
+- Widened `laravel/mcp` to `^0.3 || ^0.8`, `spatie/laravel-permission` to `^7.2 || ^8.0`, and `orchestra/testbench` (dev) to `^10.0 || ^11.0`, so the package also installs alongside these dependencies' newer major versions ([#5](https://github.com/flexpik/filament-studio/pull/5), [#4](https://github.com/flexpik/filament-studio/pull/4), [#2](https://github.com/flexpik/filament-studio/pull/2)).
+- Bumped `actions/checkout` from v4 to v7 in the test workflow ([#6](https://github.com/flexpik/filament-studio/pull/6)).
+
 ## [1.3.1] - 2026-08-29
 
 ### Fixed
