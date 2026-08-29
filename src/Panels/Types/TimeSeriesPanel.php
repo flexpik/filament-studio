@@ -38,6 +38,7 @@ class TimeSeriesPanel extends AbstractStudioPanel
                 ->options(fn () => StudioCollection::query()->forTenant(Filament::getTenant()?->getKey())->pluck('label', 'id'))
                 ->required()
                 ->live()
+                ->default(null)
                 ->afterStateUpdated(fn (Set $set) => $set('date_field', null) || $set('value_field', null)),
             Select::make('date_field')
                 ->label('Date Field')
@@ -53,7 +54,8 @@ class TimeSeriesPanel extends AbstractStudioPanel
                         ->pluck('label', 'column_name');
                 })
                 ->required()
-                ->live(),
+                ->live()
+                ->default(null),
             Select::make('value_field')
                 ->label('Value Field')
                 ->options(function (Get $get) {
@@ -66,7 +68,8 @@ class TimeSeriesPanel extends AbstractStudioPanel
                         ->where('collection_id', $collectionId)
                         ->pluck('label', 'column_name');
                 })
-                ->required(),
+                ->required()
+                ->default(null),
             Select::make('aggregate_function')
                 ->label('Function')
                 ->options(
@@ -74,7 +77,8 @@ class TimeSeriesPanel extends AbstractStudioPanel
                         ->mapWithKeys(fn (AggregateFunction $fn) => [$fn->value => $fn->label()])
                         ->toArray()
                 )
-                ->required(),
+                ->required()
+                ->default(null),
             Select::make('group_precision')
                 ->label('Group By')
                 ->options(

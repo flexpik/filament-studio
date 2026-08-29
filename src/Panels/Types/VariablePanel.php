@@ -30,6 +30,7 @@ class VariablePanel extends AbstractStudioPanel
                 ->label('Variable Key')
                 ->helperText('Other panels reference this as {{key}}')
                 ->required()
+                ->default(null)
                 ->alphaDash(),
             Select::make('interface')
                 ->label('Input Type')

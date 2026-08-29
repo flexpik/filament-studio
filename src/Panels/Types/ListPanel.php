@@ -33,11 +33,13 @@ class ListPanel extends AbstractStudioPanel
                 ->options(fn () => StudioCollection::query()->forTenant(Filament::getTenant()?->getKey())->pluck('label', 'id'))
                 ->required()
                 ->live()
+                ->default(null)
                 ->afterStateUpdated(fn (Set $set) => $set('sort_field', null)),
             TextInput::make('display_template')
                 ->label('Display Template')
                 ->helperText('Use {{field_name}} tokens. e.g., {{name}} — {{status}}')
-                ->required(),
+                ->required()
+                ->default(null),
             Select::make('sort_field')
                 ->label('Sort By')
                 ->options(function (Get $get) {

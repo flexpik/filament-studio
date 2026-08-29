@@ -26,6 +26,7 @@ class LabelPanel extends AbstractStudioPanel
             Textarea::make('text')
                 ->label('Label Text')
                 ->required()
+                ->default(null)
                 ->rows(2),
             ColorPicker::make('text_color')
                 ->label('Text Color'),
