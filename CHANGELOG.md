@@ -7,11 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.2] - 2026-08-29
+
+### Changed
+
+- No functional changes from v1.4.1; supersedes it with a clarified changelog entry below.
+
 ## [1.4.1] - 2026-08-29
 
 ### Removed
 
-- Internal planning/spec documents under `docs/superpowers/` that were accidentally included in the v1.4.0 package distribution. No source code changes from v1.4.0.
+- Internal planning and specification documents that were accidentally included in the v1.4.0 package distribution. No source code changes from v1.4.0.
 
 ## [1.4.0] - 2026-08-29
 
