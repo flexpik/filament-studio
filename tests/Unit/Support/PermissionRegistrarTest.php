@@ -11,7 +11,7 @@ it('returns all studio permission names', function () {
     $names = PermissionRegistrar::permissionNames();
 
     expect($names)->toBeArray()
-        ->toHaveCount(2)
+        ->toHaveCount(10)
         ->toBe(StudioPermission::values());
 });
 

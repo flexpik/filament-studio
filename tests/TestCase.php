@@ -63,34 +63,10 @@ abstract class TestCase extends OrchestraTestCase
     {
         $this->loadMigrationsFrom(__DIR__.'/../vendor/orchestra/testbench-core/laravel/migrations');
 
-        $this->loadPackageMigrationStubs();
+        // Migration stubs are now loaded by FilamentStudioServiceProvider::loadStubMigrations()
+        // during packageBooted(), so we don't need to manually load them here.
 
         $this->artisan('migrate', ['--database' => 'testing']);
-    }
-
-    /**
-     * Copy .stub migrations to a temp directory as .php files so they can be loaded.
-     */
-    protected function loadPackageMigrationStubs(): void
-    {
-        $stubDir = __DIR__.'/../database/migrations';
-        $tempDir = sys_get_temp_dir().'/filament-studio-migrations-'.md5($stubDir);
-
-        // Clean up and recreate to avoid stale files
-        if (is_dir($tempDir)) {
-            array_map('unlink', glob("{$tempDir}/*.php"));
-        } else {
-            mkdir($tempDir, 0755, true);
-        }
-
-        $timestamp = 1;
-        foreach (glob("{$stubDir}/*.php.stub") as $stub) {
-            $filename = str_pad((string) $timestamp, 4, '0', STR_PAD_LEFT).'_01_01_000000_'.basename($stub, '.stub');
-            copy($stub, "{$tempDir}/{$filename}");
-            $timestamp++;
-        }
-
-        $this->loadMigrationsFrom($tempDir);
     }
 
     protected function panel(): Panel

@@ -1,0 +1,28 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create(config('filament-studio.table_prefix', 'studio_').'flow_versions', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('flow_id')->index();
+            $table->unsignedInteger('version');
+            $table->json('graph');
+            $table->timestamp('published_at')->nullable();
+            $table->string('change_summary')->nullable();
+            $table->timestamp('created_at')->nullable();
+
+            $table->unique(['flow_id', 'version']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists(config('filament-studio.table_prefix', 'studio_').'flow_versions');
+    }
+};

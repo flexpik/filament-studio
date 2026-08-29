@@ -139,6 +139,33 @@ Registered via `FilamentStudioPlugin::afterCollectionCreated(fn ($collection) =>
 
 All major models scope by `tenant_id`. Queries auto-filter to the current tenant.
 
+### Flows (Automation Engine)
+
+`src/Flows/` is a self-contained automation subsystem (triggers → directed graph of operations) with its own models, policies, enums, Filament resource, and namespace `Flexpik\FilamentStudio\Flows\`. It is **opt-in** via config (`flows.enabled`, default false) and built on the `durable-workflow/workflow` package.
+
+**Data model** (tables prefixed `studio_flow*`):
+- `studio_flows` — flow definition (trigger config, published graph, status)
+- `studio_flow_versions` — immutable published snapshots; flows have a draft + published version (see versioning below)
+- `studio_flow_runs` / `studio_flow_run_steps` — execution records forming a run tree; observability columns added by `z_add_observability_columns_to_flow_runs_and_steps`
+- `studio_flow_secrets` — encrypted per-flow secrets injected into operation configs
+- `studio_flow_audit_log` — security/lifecycle audit trail (`WriteFlowAuditLog`)
+
+**Execution path**: `FlowDispatcher` resolves a flow and creates a `StudioFlowRun`, then runs it sync or queued via `ExecuteFlowJob` (`Jobs/`). `FlowWorkflow` (Engine) walks the operation graph — `GraphWalker` topologically orders nodes — executing each node's `FlowOperation` activity with a `FlowContext`/`OperationContext`. Configs are interpolated through `Engine/Templating/TemplateEngine` (token resolution). `DryRunExecutor` and `StepThroughExecutor` support canvas dry-run and step-through debugging from the designer UI. `LogMaskingService` + `MasksSensitiveValues` redact values matching `flows.sensitive_key_patterns` before persisting step logs.
+
+**Registries** (singletons, like the field/panel registries): `OperationRegistry` and `TriggerRegistry`, both validating config against an optional schema via `ConfigSchemaValidator`. Built-in operations live under `Operations/` by category — `Records` (create/read/update/delete), `Logic` (condition, log message), `Data` (transform payload), `Communication` (HTTP request, send email), `Composition` (trigger another flow, depth-limited by `flows.max_call_depth`). Built-in triggers under `Triggers/` — `ManualTrigger`, `WebhookTrigger`, `CollectionEventTrigger` (via `RecordLifecycleObserver` + `EventSubscriptionRegistry`), and `Schedule/ScheduleTrigger` (cron, dispatched by `DispatchScheduledFlowsCommand`).
+
+**Contracts** (`src/Contracts/Flows/`): operations implement `FlowOperation`/`FlowOperationConfig`, triggers implement `FlowTrigger`/`FlowTriggerConfig`; `DataChain`, `OperationContext`, and `OperationResult` define the execution interface.
+
+**Versioning / draft-publish**: flows are edited as a draft and published into a `StudioFlowVersion`. Services in `src/Flows/Services/` orchestrate this — `SaveFlowDraft`, `PublishFlowVersion`, `RollbackFlowVersion`, `HydrateDraftFromPublished`, plus safety gates `AssertCanPublishDangerousGraph` / `AssertCanEnablePublicWebhook` and `FlowGraphValidator`. `BackfillFlowVersioningCommand` migrates pre-versioning (MVP) flows.
+
+**Webhook security** (`src/Flows/Security/`): `HmacWebhookVerifier` validates signatures with a timestamp window (`flows.webhook_timestamp_window_seconds`) and IP allowlist; `RotateWebhookSecret` rotates secrets. Public webhooks are rate-limited (`flows.webhook_rate_limit_per_minute`).
+
+**UI & API**: `Flows/Filament/Resources/FlowResource` provides the flow designer (`DesignFlow` page), run list/viewer (`ListFlowRuns`, `ViewFlowRun`), and observability widgets in `Flows/Filament/Widgets/` (recent runs, failure rate, duration, top failing). A separate flows REST API is registered by `StudioFlowsApiRouteRegistrar`.
+
+**Plugin API**: third parties register custom operations/triggers via `FilamentStudioPlugin::registerFlowOperation(key, label, activity, configSchema)` and `::registerFlowTrigger(...)` (see `tests/Fixtures/Flows/SlackPackage` for an example extension).
+
+Flow tests live under each suite at `tests/{Unit,Feature,Integration}/Flows/`.
+
 ## Key Conventions
 
 - All database tables use the configurable prefix from `config/filament-studio.php` (default: `studio_`)

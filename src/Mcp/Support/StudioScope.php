@@ -11,6 +11,7 @@ enum StudioScope: string
     case ManageFilters = '_studio.manage_filters';
     case ManageApiKeys = '_studio.manage_api_keys';
     case ReadSchema = '_studio.read_schema';
+    case Flows = '_studio.flows';
 
     public function name(): string
     {
@@ -25,6 +26,7 @@ enum StudioScope: string
             self::ManageFilters => 'Manage Saved Filters',
             self::ManageApiKeys => 'Manage API Keys',
             self::ReadSchema => 'Read Schema (Read-Only)',
+            self::Flows => 'Manage Flows',
         };
     }
 

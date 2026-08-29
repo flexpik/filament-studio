@@ -6,6 +6,14 @@ enum StudioPermission: string
 {
     case ManageFields = 'studio.manageFields';
     case ManageApiKeys = 'studio.manageApiKeys';
+    case ViewFlows = 'view_flows';
+    case CreateFlows = 'create_flows';
+    case UpdateFlows = 'update_flows';
+    case DeleteFlows = 'delete_flows';
+    case RunFlows = 'run_flows';
+    case PublishFlow = 'publish_flow';
+    case RunDangerousOperations = 'run_dangerous_operations';
+    case ExportFlows = 'export_flows';
 
     /**
      * @return array<int, string>

@@ -45,6 +45,18 @@ class StudioApiKeyFactory extends Factory
         ]);
     }
 
+    public function withFlowsScope(): static
+    {
+        $raw = Str::random(64);
+
+        return $this->state([
+            'key' => hash('sha256', $raw),
+            'permissions' => ['_studio' => ['flows']],
+        ])->afterCreating(function ($model) use ($raw) {
+            $model->plain_text_key = $raw;
+        });
+    }
+
     public function forTenant(int $tenantId): static
     {
         return $this->state(fn () => ['tenant_id' => $tenantId]);

@@ -13,7 +13,7 @@
 
 **A dynamic data model manager for Filament v5 — create collections, define fields, manage records, and build dashboards, all at runtime. No migrations required.**
 
-Filament Studio turns your Filament admin panel into a flexible data platform. Define custom data structures through a visual interface, and the plugin handles the rest: forms, tables, filters, API endpoints, dashboards, and access control — all powered by an EAV (Entity-Attribute-Value) storage engine.
+Filament Studio turns your Filament admin panel into a flexible data platform. Define custom data structures through a visual interface, and the plugin handles the rest: forms, tables, filters, API endpoints, dashboards, workflow automation, and access control — all powered by an EAV (Entity-Attribute-Value) storage engine.
 
 ## Screenshots
 
@@ -82,11 +82,22 @@ Filament Studio turns your Filament admin panel into a flexible data platform. D
 <img src="https://raw.githubusercontent.com/flexpik/filament-studio/main/art/collection-permissions.png" alt="Collection Permissions" />
 </details>
 
+<details>
+<summary>Flow editor</summary>
+<img src="https://raw.githubusercontent.com/flexpik/filament-studio/main/art/flow-editor.png" alt="Flow Editor" />
+</details>
+
+<details>
+<summary>Flow designer canvas</summary>
+<img src="https://raw.githubusercontent.com/flexpik/filament-studio/main/art/flow-designer.png" alt="Flow Designer Canvas" />
+</details>
+
 ## Why Filament Studio?
 
 - **No migrations per collection** — Add new data types at runtime without touching your codebase
 - **Full Filament integration** — Native forms, tables, filters, and actions that look and feel like hand-crafted resources
 - **Production-ready** — Multi-tenancy, multilingual content, authorization, versioning, soft deletes, and audit logging out of the box
+- **Automatable** — A visual workflow designer with triggers, versioned publishing, and full run observability, so data changes can kick off real automation
 - **AI-native** — Built-in MCP server lets Claude, Cursor, and other AI tools manage your data model through natural language
 - **Extensible** — Register custom field types, panel types, condition resolvers, and lifecycle hooks
 
@@ -145,6 +156,21 @@ A built-in [Model Context Protocol](https://modelcontextprotocol.io/) server let
   }
 }
 ```
+
+### Flows (Automation Engine)
+
+A self-contained workflow automation system: triggers start a run, a directed graph of
+operations executes in order, and every run is recorded for observability. Flows are opt-in
+(`flows.enabled`) and designed visually on a React-based canvas.
+
+- **Triggers** — Manual, Webhook (HMAC-signed, rate-limited, IP-allowlisted), Collection Event, and Schedule (cron)
+- **Operations** — Records CRUD, Condition, Transform Payload, Send Email, HTTP Request, Trigger Flow (composition, depth-limited)
+- **Draft → Publish versioning** — edit a live draft, test it inline (with dry-run and step-through debugging), then publish an immutable, restorable version
+- **Observability** — every run captures a step-by-step tree of inputs, outputs, timing, and status, with dashboard widgets for recent runs, failure rate, and duration
+- **Security** — dangerous operations and public webhooks require explicit publish-time confirmation; sensitive config values are masked before logs are persisted
+- **Extensible** — register custom operations and triggers via the plugin API
+
+See [Flows documentation](docs/flows.md) for the full guide.
 
 ### Conditional Logic
 
@@ -302,6 +328,7 @@ This approach enables runtime schema changes without migrations while preserving
 | [Filtering](docs/filtering.md) | 23 operators, filter trees, saved filters |
 | [REST API](docs/api.md) | Endpoints, authentication, permissions, rate limiting |
 | [MCP Server](docs/mcp.md) | AI assistant integration — 34 tools, stdio & HTTP transport, auth, rate limiting |
+| [Flows](docs/flows.md) | Workflow automation — triggers, operations, versioning, webhook security, REST API |
 | [Conditional Logic](docs/conditional-logic.md) | Dynamic visibility, required, and disabled states |
 | [Authorization](docs/authorization.md) | Policies, permissions, Spatie integration |
 | [Multi-Tenancy](docs/multi-tenancy.md) | Tenant scoping, lifecycle hooks |
@@ -310,6 +337,7 @@ This approach enables runtime schema changes without migrations while preserving
 | [Hooks & Events](docs/hooks.md) | Lifecycle hooks, schema modification |
 | [Custom Field Types](docs/extending/custom-field-types.md) | Building your own field types |
 | [Custom Panel Types](docs/extending/custom-panel-types.md) | Building your own dashboard panels |
+| [Extending Flows](docs/extending/flows.md) | Building your own operations and triggers |
 
 ## Requirements
 

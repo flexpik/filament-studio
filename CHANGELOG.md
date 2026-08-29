@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-08-29
+
+### Added
+
+- **Flows (automation engine)** — a self-contained workflow subsystem (`src/Flows/`), opt-in via `flows.enabled` config, built on `durable-workflow/workflow`. Flows are edited as a draft and published into an immutable `StudioFlowVersion`; runs form a traceable tree (`StudioFlowRun`/`StudioFlowRunStep`) with observability columns for duration, status, and failure tracking.
+- **Triggers**: Manual, Webhook (HMAC-signed with timestamp window + IP allowlist, rate-limited), Collection Event (create/update/delete via `RecordLifecycleObserver`), and Schedule (cron, dispatched by `studio:flows:dispatch-scheduled`).
+- **Operations** by category — Records (create/read/update/delete), Logic (condition, log message), Data (transform payload), Communication (HTTP request, send email), Composition (trigger another flow, depth-limited by `flows.max_call_depth`).
+- **Engine**: `GraphWalker` topologically executes the operation graph; `TemplateEngine` interpolates config tokens against the run's data chain; `DryRunExecutor` and `StepThroughExecutor` power canvas dry-run and step-through debugging.
+- **Security**: `LogMaskingService` redacts values matching `flows.sensitive_key_patterns` before persisting step logs; per-flow encrypted secrets (`StudioFlowSecret`) injected into operation configs; safety gates before publishing a dangerous graph or enabling a public webhook.
+- **Flow designer UI** — `FlowResource` (canvas-based `DesignFlow` page), run list/viewer, and dashboard widgets (recent runs, failure rate, duration, top failing).
+- **REST API** for flows, registered by `StudioFlowsApiRouteRegistrar` behind `flows.enabled`.
+- **Audit log** (`studio_flow_audit_log`) recording security/lifecycle events.
+- **Plugin API** — third parties register custom operations/triggers via `FilamentStudioPlugin::registerFlowOperation()` / `::registerFlowTrigger()`.
+- New MCP scope `_studio.flows` ("Manage Flows") for MCP-driven flow management.
+- `BackfillFlowVersioningCommand` to migrate pre-versioning (MVP) flows to the draft/published model.
+
+### Changed
+
+- Added `durable-workflow/workflow` (`^1.0`) as a new required dependency.
+
 ## [1.3.2] - 2026-08-29
 
 ### Changed

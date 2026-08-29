@@ -144,6 +144,36 @@ it('sets tenant_id and dashboard_id when creating a panel', function () {
         ->dashboard_id->toBe($this->dashboard->id);
 });
 
+it('seeds the config container when a panel type is selected so it is never null', function () {
+    // Regression: on a fresh panel `config` was null, so selecting a type and
+    // binding config.collection_id threw "Cannot set properties of null" in the
+    // browser and left the dependent Field select empty.
+    $component = Livewire::test(PanelsRelationManager::class, [
+        'ownerRecord' => $this->dashboard,
+        'pageClass' => EditDashboard::class,
+    ])
+        ->mountTableAction('create')
+        ->set('mountedActions.0.data.panel_type', 'metric');
+
+    $config = $component->get('mountedActions.0.data.config');
+
+    expect($config)->toBeArray()
+        ->and($config)->not->toBeNull()
+        ->and($config)->toHaveKeys(['abbreviate', 'decimal_precision', 'conditional_styles']);
+});
+
+it('resets config to an empty array when the panel type is cleared', function () {
+    $component = Livewire::test(PanelsRelationManager::class, [
+        'ownerRecord' => $this->dashboard,
+        'pageClass' => EditDashboard::class,
+    ])
+        ->mountTableAction('create')
+        ->set('mountedActions.0.data.panel_type', 'metric')
+        ->set('mountedActions.0.data.panel_type', null);
+
+    expect($component->get('mountedActions.0.data.config'))->toBe([]);
+});
+
 it('can delete a panel via the relation manager', function () {
     $panel = StudioPanel::factory()->forDashboard($this->dashboard)->create();
 

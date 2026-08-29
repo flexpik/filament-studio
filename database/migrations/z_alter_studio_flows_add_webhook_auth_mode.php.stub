@@ -1,0 +1,43 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        $prefix = config('filament-studio.table_prefix', 'studio_');
+
+        if (Schema::hasTable($prefix.'flows') && ! Schema::hasColumn($prefix.'flows', 'webhook_auth_mode')) {
+            Schema::table($prefix.'flows', function (Blueprint $table) {
+                $table->string('webhook_auth_mode')->default('hmac')->after('webhook_secret');
+                $table->json('webhook_allowed_studio_api_key_ids')->nullable()->after('webhook_auth_mode');
+            });
+        }
+
+        if (Schema::hasTable($prefix.'flows') && ! Schema::hasColumn($prefix.'flows', 'webhook_redact_paths')) {
+            Schema::table($prefix.'flows', function (Blueprint $table) {
+                $table->json('webhook_redact_paths')->nullable()->after('webhook_allowed_studio_api_key_ids');
+            });
+        }
+    }
+
+    public function down(): void
+    {
+        $prefix = config('filament-studio.table_prefix', 'studio_');
+
+        if (Schema::hasTable($prefix.'flows') && Schema::hasColumn($prefix.'flows', 'webhook_redact_paths')) {
+            Schema::table($prefix.'flows', function (Blueprint $table) {
+                $table->dropColumn('webhook_redact_paths');
+            });
+        }
+
+        if (Schema::hasTable($prefix.'flows') && Schema::hasColumn($prefix.'flows', 'webhook_auth_mode')) {
+            Schema::table($prefix.'flows', function (Blueprint $table) {
+                $table->dropColumn(['webhook_auth_mode', 'webhook_allowed_studio_api_key_ids']);
+            });
+        }
+    }
+};
